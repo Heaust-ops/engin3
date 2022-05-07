@@ -1,0 +1,38 @@
+.App {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: grid;
+  gap: 1px;
+  background-color: #000;
+  grid-template-areas:
+    "header header header header header header header"
+    "view view view view view side side"
+    "view view view view view side side"
+    "view view view view view side side"
+    "view view view view view side side"
+    "view view view view view side side"
+    "view view view view view side side"
+    "view view view view view side side"
+    "view view view view view side side"
+    "view view view view view side side"
+    "view view view view view side side"
+    "view view view view view side side";
+}
+
+.headerMenu {
+  grid-area: header;
+  background-color: #222;
+}
+
+.viewport {
+  grid-area: view;
+  background-color: #222;
+}
+
+.sidePanel {
+  grid-area: side;
+  background-color: #222;
+}

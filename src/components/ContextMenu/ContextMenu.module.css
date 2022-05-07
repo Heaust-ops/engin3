@@ -1,0 +1,31 @@
+.item {
+  padding: 0.1rem;
+  margin-bottom: 0.05rem;
+  margin-top: 0.05rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+}
+
+.item:hover {
+  filter: brightness(200%);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.item:active {
+  filter: brightness(100%);
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.wrapper {
+  opacity: 0.9;
+  background-color: rgba(0, 0, 0);
+  position: fixed;
+  min-width: 4rem;
+  top: 12rem;
+  left: 12rem;
+  color: #999;
+  font-size: 0.5rem;
+  border-radius: 0.1rem;
+  font-family: monospace;
+}
