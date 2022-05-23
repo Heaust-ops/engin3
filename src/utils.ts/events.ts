@@ -1,0 +1,246 @@
+import { MeshLoadMethod, ViewportEventType } from "../enums";
+import { getLoader } from "./models";
+import { removeMesh } from "./transactions";
+
+export interface ViewportEvent {
+  type: ViewportEventType;
+  info: ViewportEventAxesInfo | ViewportEventMeshInfo;
+}
+
+export interface ViewportEventAxesInfo {
+  objectID: number;
+  finalX: number;
+  finalY: number;
+  finalZ: number;
+  initialX: number;
+  initialY: number;
+  initialZ: number;
+}
+
+export interface ViewportEventMeshInfo {
+  objectID: number;
+  path: string;
+  method: MeshLoadMethod;
+}
+
+export const addVE = (arg: ViewportEvent) => {
+  window.viewportEventHistory.push(arg);
+};
+
+/**
+ * @param type Optional
+ *
+ * Search the latest occurence of a certain type of Viewport Event,
+ *
+ * before a certain index OR
+ *
+ * before the latest occurence of another Viewport Event
+ *
+ * @param before Default: the length of the Event History Array
+ *
+ * The index, if we want to find the Event before a certain index OR
+ *
+ * The Event Type, if we want to find an Event before the latest
+ *
+ * Event of this type
+ *
+ * @param filter (arg: ViewportEvent) => boolean
+ *
+ * We will ignore the VE that this function doesn't agree with.
+ *
+ * @returns
+ * *If no type is given:* Latest Event | Laste Element of Event History
+ *
+ * *If no before is given:* Latest Event of the given type
+ *
+ * *If both are given:* The Event before the index or another Event of the given type
+ */
+export const getLatestVE = (
+  type?: ViewportEventType,
+  before?: number | ViewportEvent | null,
+  filter?: (arg: ViewportEvent) => boolean
+) => {
+  if (!before) before = window.viewportEventHistory.length;
+  if (!type)
+    // Return Latest if no type
+    return window.viewportEventHistory[window.viewportEventHistory.length - 1];
+
+  // Calculate index if before is in the form of VE type
+  if (typeof before !== "number") {
+    for (let i = window.viewportEventHistory.length - 1; i > -1; i--) {
+      if (
+        window.viewportEventHistory[i].type === (before as ViewportEvent).type
+      )
+        before = i;
+    }
+
+    // If no event of the type before has occured
+    if (typeof before !== "number") return null;
+  }
+
+  // Calculate the Event before a certain index
+  for (let i = before - 1; i > -1; i--) {
+    if (filter && !filter(window.viewportEventHistory[i])) continue;
+    if (window.viewportEventHistory[i].type === type)
+      return window.viewportEventHistory[i];
+  }
+
+  return null;
+};
+
+/**
+ * @param type Optional
+ *
+ * Search the latest occurence of a certain type of Viewport Event,
+ *
+ * before a certain index OR
+ *
+ * before the latest occurence of another Viewport Event
+ *
+ * @param before Default: the length of the Event History Array
+ *
+ * The index, if we want to find the Event before a certain index OR
+ *
+ * The Event Type, if we want to find an Event before the latest
+ *
+ * Event of this type
+ *
+ * @param filter (arg: ViewportEvent) => boolean
+ *
+ * We will ignore the VE that this function doesn't agree with.
+ *
+ * @returns
+ * *If no type is given:* last index of eventHistory array
+ *
+ * *If no before is given:* Index of the latest Event of the given type
+ *
+ * *If both are given:* Index of the Event before the index or another Event of the given type
+ */
+export const getLatestVEIndex = (
+  type?: ViewportEventType,
+  before?: number | ViewportEvent | null,
+  filter?: (arg: ViewportEvent) => boolean
+) => {
+  if (!before) before = window.viewportEventHistory.length;
+  if (!type)
+    // Return Latest if no type
+    return window.viewportEventHistory.length - 1;
+
+  // Calculate index if before is in the form of VE type
+  if (typeof before !== "number") {
+    for (let i = window.viewportEventHistory.length - 1; i > -1; i--) {
+      if (window.viewportEventHistory[i].type === type) before = i;
+    }
+
+    // If no event of the type before has occured
+    if (typeof before !== "number") return null;
+  }
+
+  // Calculate the Event before a certain index
+  for (let i = before - 1; i > -1; i--) {
+    if (filter && !filter(window.viewportEventHistory[i])) continue;
+    if (window.viewportEventHistory[i].type === type) return i;
+  }
+
+  return null;
+};
+
+/**
+ * This function applies the changes until just before the given VE
+ * In case of a load or a remove VE, it just performs the reverse of it
+ * @param ve The ViewportEvent or its Index to reverse
+ * @returns true for success, false for failure
+ * Reasons to fail may include,
+ * - Object to modify being missing
+ * - Index provided is out of range
+ */
+export const reverseVE = (ve: ViewportEvent | number) => {
+  try {
+    if (typeof ve === "number") ve = window.viewportEventHistory[ve];
+  } catch {
+    return false;
+  }
+
+  switch (ve.type) {
+    case ViewportEventType.scale: {
+      const info = ve.info as ViewportEventAxesInfo;
+      const obj = window.scene.getObjectById(info.objectID);
+      if (obj) obj.scale.set(info.initialX, info.initialY, info.initialZ);
+      else return false;
+      return true;
+    }
+
+    case ViewportEventType.grab: {
+      const info = ve.info as ViewportEventAxesInfo;
+      const obj = window.scene.getObjectById(info.objectID);
+      if (obj) obj.position.set(info.initialX, info.initialY, info.initialZ);
+      else return false;
+      return true;
+    }
+
+    case ViewportEventType.rotate: {
+      const info = ve.info as ViewportEventAxesInfo;
+      const obj = window.scene.getObjectById(info.objectID);
+      if (obj) obj.rotation.set(info.initialX, info.initialY, info.initialZ);
+      else return false;
+      return true;
+    }
+
+    case ViewportEventType.loadMesh: {
+      const info = ve.info as ViewportEventAxesInfo;
+      const obj = window.scene.getObjectById(info.objectID);
+      removeMesh(obj as THREE.Mesh);
+      return true;
+    }
+
+    case ViewportEventType.delete: {
+      const info = ve.info as ViewportEventMeshInfo;
+      const loader = getLoader(info.method);
+
+      // Get Latest Transforms before deletion
+      const scale = getLatestVE(
+        ViewportEventType.scale,
+        null,
+        (arg) => (arg.info as ViewportEventAxesInfo).objectID === info.objectID
+      )?.info as ViewportEventAxesInfo | null;
+      const position = getLatestVE(
+        ViewportEventType.grab,
+        null,
+        (arg) => (arg.info as ViewportEventAxesInfo).objectID === info.objectID
+      )?.info as ViewportEventAxesInfo | null;
+      const rotation = getLatestVE(
+        ViewportEventType.rotate,
+        null,
+        (arg) => (arg.info as ViewportEventAxesInfo).objectID === info.objectID
+      )?.info as ViewportEventAxesInfo | null;
+
+      // Load the Model and Apply any tranforms found
+      loader({
+        modelPath: info.path,
+        preprocess: (mesh) => {
+          if (scale) mesh.scale.set(scale.finalX, scale.finalY, scale.finalZ);
+          if (position)
+            mesh.position.set(
+              position.finalX,
+              position.finalY,
+              position.finalZ
+            );
+          if (rotation)
+            mesh.rotation.set(
+              rotation.finalX,
+              rotation.finalY,
+              rotation.finalZ
+            );
+          for (let i = 0; i < window.viewportEventHistory.length; i++)
+            if (window.viewportEventHistory[i].info.objectID === info.objectID)
+              window.viewportEventHistory[i].info.objectID = mesh.id;
+        },
+        asTransaction: false,
+      });
+
+      return true;
+    }
+  }
+};
+
+export const popVE = () => window.viewportEventHistory.pop() ?? null;

@@ -1,7 +1,7 @@
 .item {
-  padding: 0.1rem;
-  margin-bottom: 0.05rem;
-  margin-top: 0.05rem;
+  padding: 0.25rem;
+  margin-bottom: 0.125rem;
+  margin-top: 0.125rem;
   cursor: pointer;
   display: flex;
   justify-content: space-between;
@@ -21,11 +21,11 @@
   opacity: 0.9;
   background-color: rgba(0, 0, 0);
   position: fixed;
-  min-width: 4rem;
+  min-width: 12.5rem;
   top: 12rem;
   left: 12rem;
   color: #999;
-  font-size: 0.5rem;
-  border-radius: 0.1rem;
+  font-size: 1.25rem;
+  border-radius: 0.25rem;
   font-family: monospace;
 }

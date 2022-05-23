@@ -1,50 +1,61 @@
-import { FunctionComponent, HTMLAttributes, useEffect, useState } from "react";
-import ContextMenu, { ContextMenuProps } from "./ContextMenu";
+import {
+  CSSProperties,
+  FunctionComponent,
+  HTMLAttributes,
+  ReactNode,
+  useEffect,
+  useState,
+} from "react";
+import ContextMenu, { ContextMenuItem } from "./ContextMenu";
 
-interface ContextMenuWrapperDivProps
-  extends HTMLAttributes<HTMLDivElement>,
-    ContextMenuProps {
-  children?: React.ReactNode;
+export interface ContextMenuPropsWithBindings {
+  hotkeys?: { [key: string]: ContextMenuItem[] } | null;
+  contextMenu?: ContextMenuItem[] | null;
+}
+interface ContextMenuWrapperDivProps extends HTMLAttributes<HTMLDivElement> {
+  itemStyle?: CSSProperties;
+  wrapperStyle?: CSSProperties;
+  children?: ReactNode;
+  keyStack: KeyboardEvent["key"][];
+  menus: ContextMenuPropsWithBindings;
 }
 
-const keyPressStack = [] as KeyboardEvent["key"][];
-
 const ContextMenuWrapperDiv: FunctionComponent<ContextMenuWrapperDivProps> = ({
-  contextMenuItems,
+  menus,
+  itemStyle,
+  wrapperStyle,
+  keyStack,
   ...props
 }) => {
   const [menux, setmenux] = useState(-1);
   const [menuy, setmenuy] = useState(-1);
   const [showContextMenu, setshowContextMenu] = useState(false);
+  const [displayedMenu, setdisplayedMenu] = useState([] as ContextMenuItem[]);
 
-  // KEYBOARDHANDLER
+  const showAddContextMenu = (
+    x: number,
+    y: number,
+    menu: ContextMenuItem[]
+  ) => {
+    setdisplayedMenu(menu);
+    setmenux(x);
+    setmenuy(y);
+    setshowContextMenu(true);
+  };
+
   useEffect(() => {
-    const showAddContextMenu = (x: number, y: number) => {
-      setmenux(x);
-      setmenuy(y);
-      setshowContextMenu(true);
-    };
-
-    const onKeyDown = (ev: KeyboardEvent) => {
-      if (!keyPressStack.includes(ev.key)) keyPressStack.push(ev.key);
-      if (keyPressStack.join("").toLowerCase() === "shifta")
-        showAddContextMenu(window.mousePosition.x, window.mousePosition.y);
-    };
-
-    // Release Keys from Stack
-    const onKeyUp = (ev: KeyboardEvent) => {
-      if (keyPressStack.indexOf(ev.key) >= 0)
-        keyPressStack.splice(keyPressStack.indexOf(ev.key), 1);
-    };
-
-    document.addEventListener("keydown", onKeyDown);
-    document.addEventListener("keyup", onKeyUp);
-
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      document.removeEventListener("keyup", onKeyUp);
-    };
-  }, [showContextMenu]);
+    if (menus.hotkeys) {
+      Object.keys(menus.hotkeys).forEach((el) => {
+        // Show menu on the combination
+        if (keyStack.join("").toLowerCase() === el)
+          showAddContextMenu(
+            window.mousePosition.x,
+            window.mousePosition.y,
+            menus.hotkeys![el]
+          );
+      });
+    }
+  }, [keyStack, menus.hotkeys]);
 
   return (
     <>
@@ -53,23 +64,36 @@ const ContextMenuWrapperDiv: FunctionComponent<ContextMenuWrapperDivProps> = ({
         <ContextMenu
           wrapperStyle={{
             ...{ zIndex: 2 },
-            ...props.wrapperStyle,
+            ...(wrapperStyle ?? {}),
             ...{ top: menuy, left: menux },
           }}
-          itemStyle={props.itemStyle}
-          contextMenuItems={contextMenuItems}
+          itemStyle={itemStyle ?? {}}
+          contextMenuItems={displayedMenu}
         />
       )}
 
       {/* Actual Div */}
       <div
+
         {...props}
+
         onClick={(ev) => {
           if (props.onClick) props.onClick(ev);
           setshowContextMenu(false);
+          setdisplayedMenu([]);
         }}
+
         onContextMenu={(ev) => {
           ev.preventDefault();
+
+          if (menus.contextMenu) {
+            showAddContextMenu(
+              window.mousePosition.x,
+              window.mousePosition.y,
+              menus.contextMenu
+            );
+          }
+
           if (props.onContextMenu) props.onContextMenu(ev);
         }}
       >

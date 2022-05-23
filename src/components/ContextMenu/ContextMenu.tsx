@@ -55,8 +55,8 @@ const ContextMenu: FunctionComponent<ContextMenuProps> = ({
                       <div style={{ width: "0.5rem", height: "0" }} />
                       <ArrowRightIcon
                         style={{
-                          width: "0.8rem",
-                          height: "0.8rem",
+                          width: "1.8rem",
+                          height: "1.8rem",
                           transition: "0.5s",
                           transform: `rotate(${
                             submenu === index ? 180 : 0
