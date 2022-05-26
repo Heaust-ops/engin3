@@ -1,4 +1,4 @@
-import { loadPrimitive } from "../utils.ts/models";
+import { loadPrimitive } from "../utils/models";
 
 export const viewportAddMenu = [
   {

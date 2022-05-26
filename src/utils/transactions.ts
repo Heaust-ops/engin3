@@ -46,16 +46,16 @@ export const startTransaction = (type: ViewportEventType) => {
       break;
     case ViewportEventType.grab:
       window.pendingTransactionInitials = [
-        window.selectedItem.scale.x,
-        window.selectedItem.scale.y,
-        window.selectedItem.scale.z,
+        window.selectedItem.position.x,
+        window.selectedItem.position.y,
+        window.selectedItem.position.z,
       ];
       break;
     case ViewportEventType.rotate:
       window.pendingTransactionInitials = [
-        window.selectedItem.scale.x,
-        window.selectedItem.scale.y,
-        window.selectedItem.scale.z,
+        window.selectedItem.rotation.x,
+        window.selectedItem.rotation.y,
+        window.selectedItem.rotation.z,
       ];
       break;
     case ViewportEventType.loadMesh:
@@ -68,9 +68,9 @@ export const startTransaction = (type: ViewportEventType) => {
         null,
         (arg) => arg.info.objectID === window.selectedItem?.id
       );
-      window.pendingMeshTransactionInfo = {
-        path: (ve?.info as ViewportEventMeshInfo).path,
-        method: (ve?.info as ViewportEventMeshInfo).method,
+      if (ve) window.pendingMeshTransactionInfo = {
+        path: (ve.info as ViewportEventMeshInfo).path,
+        method: (ve.info as ViewportEventMeshInfo).method,
       };
       break;
   }

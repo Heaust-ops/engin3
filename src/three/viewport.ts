@@ -65,17 +65,19 @@ export const viewportInit = (targetClass = "viewport") => {
     window.controls.update();
 
     // Setting up RayCaster
-    let ndcMouseX = -1;
-    let ndcMouseY = -1;
     let rc = new THREE.Raycaster();
 
     (target[0] as HTMLDivElement).onmousemove = (e) => {
-      ndcMouseX =
-        ((e.pageX - (target[0] as HTMLDivElement).offsetLeft) / Cwidth()) * 2 -
-        1;
-      ndcMouseY =
-        -((e.pageY - (target[0] as HTMLDivElement).offsetTop) / Cheight()) * 2 +
-        1;
+      window.ndcMousePosition = {
+        x:
+          ((e.pageX - (target[0] as HTMLDivElement).offsetLeft) / Cwidth()) *
+            2 -
+          1,
+        y:
+          -((e.pageY - (target[0] as HTMLDivElement).offsetTop) / Cheight()) *
+            2 +
+          1,
+      };
     };
 
     const CheckRC = (
@@ -83,7 +85,14 @@ export const viewportInit = (targetClass = "viewport") => {
       onIntersection: (arg: THREE.Intersection[]) => void,
       onEmpty = () => {}
     ) => {
-      rc.setFromCamera(new THREE.Vector3(ndcMouseX, ndcMouseY, 0), camera);
+      rc.setFromCamera(
+        new THREE.Vector3(
+          window.ndcMousePosition.x,
+          window.ndcMousePosition.y,
+          0
+        ),
+        camera
+      );
       let intersects = rc.intersectObjects(window.scene.children);
       if (intersects.length > 0) {
         onIntersection(intersects);

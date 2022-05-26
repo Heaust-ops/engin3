@@ -13,21 +13,23 @@ import {
 } from "./enums";
 import { MousePosition } from "./interfaces";
 import { Material, Vector3 } from "three";
-import { isSelectedType } from "./utils.ts/validity";
+import { isSelectedType } from "./utils/validity";
 import {
   commitTransaction,
   removeSelectedMesh,
   rollbackTransaction,
   startTransaction,
-} from "./utils.ts/transactions";
-import { loadFBXModel, loadGLTFModel } from "./utils.ts/models";
-import { ViewportEvent } from "./utils.ts/events";
+} from "./utils/transactions";
+import { loadFBXModel, loadGLTFModel } from "./utils/models";
+import { ViewportEvent } from "./utils/events";
+import { getMousePositionIn3D, getVector3Component } from "./utils/helpers";
 
 declare global {
   interface Window {
     scene: THREE.Scene;
     selectedItem: THREE.Object3D | null;
     mousePosition: MousePosition;
+    ndcMousePosition: MousePosition;
     viewportMode: ViewportModes;
     workingAxis: WorkingAxes;
     controls: OrbitControls;
@@ -48,6 +50,7 @@ declare global {
 
 window.pendingTransactionType = null;
 window.mousePosition = { x: -1, y: -1 };
+window.ndcMousePosition = { x: -1, y: -1 };
 window.workingAxis = WorkingAxes.all;
 window.viewportMode = ViewportModes.navigate;
 window.viewportEventHistory = [];
@@ -73,6 +76,7 @@ function App() {
   const [keyStack, setkeyStack] = useState([] as KeyboardEvent["key"][]);
   const [mode, setmode] = useState(ViewportModes.navigate);
 
+  // Regulating Mode Changes
   useEffect(() => {
     window.viewportMode = mode;
     let mouseDeltaInterval: NodeJS.Timer;
@@ -80,6 +84,10 @@ function App() {
     if (window.controls) {
       if (mode !== ViewportModes.navigate) window.controls.enabled = false;
       else window.controls.enabled = true;
+    }
+
+    if (mode === ViewportModes.navigate) {
+      window.workingAxis = WorkingAxes.all;
     }
 
     if (
@@ -90,19 +98,20 @@ function App() {
       startTransaction(mode as unknown as ViewportEventType);
 
     if ([ViewportModes.grab, ViewportModes.rotate].includes(mode)) {
-      let prevMousePosition = { ...window.mousePosition };
+      let prevPos = getMousePositionIn3D(window.ndcMousePosition);
       mouseDeltaInterval = setInterval(() => {
-        const deltaX = window.mousePosition.x - prevMousePosition.x;
-        // ThreeJs Y axis is reverse of DOM y axis
-        const deltaY = -window.mousePosition.y + prevMousePosition.y;
-
-        const lookAtVector = new Vector3(0, 0, -1);
-        lookAtVector.applyQuaternion(window.viewportCamera.quaternion);
-
-        console.log(deltaX, deltaY);
-
-        prevMousePosition = { ...window.mousePosition };
-      }, 20);
+        const currentPos = getMousePositionIn3D(window.ndcMousePosition);
+        const delta = currentPos.clone().add(prevPos.multiplyScalar(-1));
+        if (window.selectedItem) {
+          if (mode === ViewportModes.grab) {
+            window.selectedItem.translateOnAxis(
+              getVector3Component(delta, window.workingAxis),
+              Math.pow(currentPos.lengthSq(), 1 / 5)
+            );
+          }
+        }
+        prevPos = currentPos;
+      }, 10);
     }
 
     return () => {
@@ -115,17 +124,81 @@ function App() {
     // Handle Hotkeys
     const handleHotkeys = (hotkeyStack: KeyboardEvent["key"][]) => {
       switch (hotkeyStack.join("")) {
+        // Undo
         case "controlz":
           rollbackTransaction();
           break;
         case "o":
           break;
+
+        // Deletion and Changing Working Axes
         case "x":
-          startTransaction(ViewportEventType.delete);
-          removeSelectedMesh();
-          commitTransaction();
+          if (window.viewportMode === ViewportModes.navigate) {
+            startTransaction(ViewportEventType.delete);
+            removeSelectedMesh();
+            commitTransaction();
+            /** End of Deletion Logic */
+          } else if (
+            [
+              ViewportModes.grab,
+              ViewportModes.rotate,
+              ViewportModes.scale,
+            ].includes(window.viewportMode)
+          )
+            window.workingAxis = WorkingAxes.x;
+          break;
+        case "y":
+          if (
+            [
+              ViewportModes.grab,
+              ViewportModes.rotate,
+              ViewportModes.scale,
+            ].includes(window.viewportMode)
+          )
+            window.workingAxis = WorkingAxes.y;
+          break;
+        case "z":
+          if (
+            [
+              ViewportModes.grab,
+              ViewportModes.rotate,
+              ViewportModes.scale,
+            ].includes(window.viewportMode)
+          )
+            window.workingAxis = WorkingAxes.z;
+          break;
+        case "shiftx":
+          if (
+            [
+              ViewportModes.grab,
+              ViewportModes.rotate,
+              ViewportModes.scale,
+            ].includes(window.viewportMode)
+          )
+            window.workingAxis = WorkingAxes.notx;
+          break;
+        case "shifty":
+          if (
+            [
+              ViewportModes.grab,
+              ViewportModes.rotate,
+              ViewportModes.scale,
+            ].includes(window.viewportMode)
+          )
+            window.workingAxis = WorkingAxes.noty;
+          break;
+        case "shiftz":
+          if (
+            [
+              ViewportModes.grab,
+              ViewportModes.rotate,
+              ViewportModes.scale,
+            ].includes(window.viewportMode)
+          )
+            window.workingAxis = WorkingAxes.notz;
           break;
 
+        // Changing Viewport Modes
         case "g":
           if (isSelectedType("Mesh", "Group", "SkinnedMesh"))
             window.viewportMode === ViewportModes.grab
@@ -174,6 +247,7 @@ function App() {
     };
   }, [keyStack]);
 
+  // On Initial Mount
   useEffect(() => {
     viewportInit();
     // Keeping track of mouse cursor

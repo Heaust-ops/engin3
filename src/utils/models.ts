@@ -221,12 +221,12 @@ export const getLoader = (loadMethod: MeshLoadMethod) => {
     [MeshLoadMethod.loadGLTF]: loadGLTFModel,
     [MeshLoadMethod.loadPrimitive]: loadPrimitive,
     [MeshLoadMethod.loadPrimitiveBuffer]: (arg: {
-      modelPath?: string | undefined;
-      pos?: [number, number, number] | undefined;
-      rotation?: [number, number, number] | undefined;
-      size?: number | [number, number, number] | undefined;
-      preprocess?: ((arg: THREE.Mesh) => void) | undefined;
-      buffer?: boolean | undefined;
+      modelPath?: string;
+      pos?: [number, number, number];
+      rotation?: [number, number, number];
+      size?: number | [number, number, number];
+      preprocess?: (arg: THREE.Mesh) => void;
+      asTransaction?: boolean;
     }) => {
       loadPrimitive({ ...arg, buffer: true });
     },
