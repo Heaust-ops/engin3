@@ -8,7 +8,7 @@ This is an under development ThreeJs editor inspired Game engine
 
 ## Making CG Websites blazing fast
 
-I plan to load this things with lots of presets.
+I plan to load this thing with lots of presets.
 So I just have to code once and then I or anyone can use this engine to reimplement them easily in diverse environments.
 
 # What will the code generation look like
