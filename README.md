@@ -1,46 +1,25 @@
-# Getting Started with Create React App
+# What is it?
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## A ThreeJs Engine
 
-## Available Scripts
+This is an under development ThreeJs editor inspired Game engine
 
-In the project directory, you can run:
+# What for?
 
-### `yarn start`
+## Making CG Websites blazing fast
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+I plan to load this things with lots of presets.
+So I just have to code once and then I or anyone can use this engine to reimplement them easily in diverse environments.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+# What will the code generation look like
 
-### `yarn test`
+## Human like
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+The code generation is planned to be very human like, so that once we the engine generates the code, it is possible for developers to further work on it and have a pleasant experience while doing so.
 
-### `yarn build`
+# Is it done?
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Nope
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `yarn eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+Not even close, But you follow it's progress right here on this repo.
+or on my twitter @HeaustA
