@@ -21,5 +21,5 @@ The code generation is planned to be very human like, so that once we the engine
 
 ## Nope
 
-Not even close, But you follow it's progress right here on this repo.
+Not even close, But you can follow it's progress right here on this repo.
 or on my twitter @HeaustA
