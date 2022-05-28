@@ -65,6 +65,7 @@ export const startTransaction = (type: ViewportEventType) => {
         window.selectedItem.scale.z,
       ];
       break;
+
     case ViewportEventType.grab:
       window.pendingTransactionInitials = [
         window.selectedItem.position.x,
@@ -72,6 +73,7 @@ export const startTransaction = (type: ViewportEventType) => {
         window.selectedItem.position.z,
       ];
       break;
+
     case ViewportEventType.rotate:
       window.pendingTransactionInitials = [
         window.selectedItem.rotation.x,
@@ -79,6 +81,7 @@ export const startTransaction = (type: ViewportEventType) => {
         window.selectedItem.rotation.z,
       ];
       break;
+
     case ViewportEventType.loadMesh:
       /**
        * Logic implemented in models directly
@@ -88,6 +91,7 @@ export const startTransaction = (type: ViewportEventType) => {
        * but that'd make the code less declarative
        */
       break;
+
     case ViewportEventType.delete:
       window.pendingTransactionObjectID = window.selectedItem.id ?? null;
       const ve = getLatestVE(
@@ -205,7 +209,6 @@ export const commitTransaction = () => {
  * Undoes the most recent transaction.
  *
  * Shouldn't be allowed to use mid transaction, commit first please.
- * auto-commits, if not commited.
  *
  * This is done to improve UX,
  *
@@ -214,7 +217,7 @@ export const commitTransaction = () => {
  */
 export const rollbackTransaction = () => {
   // Do not rollback mid transaction
-  if (window.pendingTransactionObjectID) commitTransaction();
+  if (window.pendingTransactionObjectID) return;
   const ve = popVE();
   if (ve) reverseVE(ve);
 };

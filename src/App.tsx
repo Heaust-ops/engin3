@@ -355,6 +355,7 @@ function App() {
                   ViewportModes.scale,
                 ].includes(mode)
               ) {
+                commitTransaction();
                 rollbackTransaction();
                 setmode(ViewportModes.navigate);
               }
