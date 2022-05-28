@@ -93,20 +93,57 @@ function App() {
     if (
       [ViewportModes.grab, ViewportModes.rotate, ViewportModes.scale].includes(
         mode
-      )
+      ) &&
+      !window.pendingTransactionObjectID
     )
       startTransaction(mode as unknown as ViewportEventType);
 
     if ([ViewportModes.grab, ViewportModes.rotate].includes(mode)) {
       let prevPos = getMousePositionIn3D(window.ndcMousePosition);
+      if (!window.selectedItem) return;
+
+      // Interval
       mouseDeltaInterval = setInterval(() => {
         const currentPos = getMousePositionIn3D(window.ndcMousePosition);
-        const delta = currentPos.clone().add(prevPos.multiplyScalar(-1));
+        const delta = currentPos.clone().sub(prevPos);
         if (window.selectedItem) {
+          // Grab Logic
           if (mode === ViewportModes.grab) {
-            window.selectedItem.translateOnAxis(
-              getVector3Component(delta, window.workingAxis),
-              Math.pow(currentPos.lengthSq(), 1 / 5)
+            const translateComponent = getVector3Component(
+              delta,
+              window.workingAxis
+            );
+            const shift = translateComponent.multiplyScalar(
+              Math.pow(currentPos.lengthSq(), 1 / 4)
+            );
+
+            if (keyStack.join("") === "shift") {
+              shift.normalize().multiplyScalar(0.51);
+              shift.set(
+                Math.round(shift.x) * 2,
+                Math.round(shift.y) * 2,
+                Math.round(shift.z) * 2
+              );
+            }
+
+            window.selectedItem.position.add(shift);
+          }
+          // Rotate Logic
+          if (mode === ViewportModes.rotate) {
+            const componentVector = getVector3Component(
+              new Vector3(1, 1, 1),
+              window.workingAxis
+            );
+            const angularVector = delta.cross(currentPos).normalize();
+            const angularComp = -Math.abs(angularVector.dot(componentVector));
+            const axis = new Vector3(
+              delta.x * componentVector.x,
+              delta.y * componentVector.y,
+              delta.z * componentVector.z
+            );
+            window.selectedItem.rotateOnWorldAxis(
+              axis.normalize(),
+              angularComp / 7.5
             );
           }
         }
@@ -117,7 +154,7 @@ function App() {
     return () => {
       if (mouseDeltaInterval) clearInterval(mouseDeltaInterval);
     };
-  }, [mode]);
+  }, [keyStack, mode]);
 
   // Handle Key Stack
   useEffect(() => {
@@ -199,13 +236,21 @@ function App() {
           break;
 
         // Changing Viewport Modes
+        // Grab
         case "g":
           if (isSelectedType("Mesh", "Group", "SkinnedMesh"))
             window.viewportMode === ViewportModes.grab
               ? setmode(ViewportModes.navigate)
               : setmode(ViewportModes.grab);
           break;
-
+        // Rotate
+        case "r":
+          if (isSelectedType("Mesh", "Group", "SkinnedMesh"))
+            window.viewportMode === ViewportModes.rotate
+              ? setmode(ViewportModes.navigate)
+              : setmode(ViewportModes.rotate);
+          break;
+        // Scale
         case "s":
           if (isSelectedType("Mesh", "Group", "SkinnedMesh"))
             window.viewportMode === ViewportModes.scale
@@ -321,16 +366,17 @@ function App() {
           // Handle Scaling
           if (
             window.viewportMode === ViewportModes.scale && // Handle Scaling
-            window.workingAxis === WorkingAxes.all && // For uniform scaling
             isSelectedType("Mesh", "Group", "SkinnedMesh")
           ) {
             const scalingFactor =
               Math.sign(ev.deltaY) < 0
                 ? 0.1 /** scrollup */
                 : -0.1; /** scroll down */
-            (window.selectedItem as THREE.Mesh).scale.x += scalingFactor;
-            (window.selectedItem as THREE.Mesh).scale.y += scalingFactor;
-            (window.selectedItem as THREE.Mesh).scale.z += scalingFactor;
+            const scalingVector = getVector3Component(
+              new Vector3(scalingFactor, scalingFactor, scalingFactor),
+              window.workingAxis
+            );
+            (window.selectedItem as THREE.Mesh).scale.add(scalingVector);
           }
         }}
         menus={menus}

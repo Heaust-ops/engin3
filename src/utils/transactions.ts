@@ -157,4 +157,5 @@ export const commitTransaction = () => {
 export const rollbackTransaction = () => {
   const ve = popVE();
   if (ve) reverseVE(ve);
+  window.pendingTransactionObjectID = null;
 };
