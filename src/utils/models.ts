@@ -215,6 +215,11 @@ export const loadFBXModel = ({
   }
 };
 
+/**
+ * 
+ * @param loadMethod The Method of Loading
+ * @returns The appropriate loader that uses the given method to load
+ */
 export const getLoader = (loadMethod: MeshLoadMethod) => {
   return {
     [MeshLoadMethod.loadFBX]: loadFBXModel,

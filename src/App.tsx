@@ -22,7 +22,7 @@ import {
 } from "./utils/transactions";
 import { loadFBXModel, loadGLTFModel } from "./utils/models";
 import { ViewportEvent } from "./utils/events";
-import { getMousePositionIn3D, getVector3Component } from "./utils/helpers";
+import { getMousePositionIn3D, getVector3Component } from "./utils/utils";
 
 declare global {
   interface Window {
@@ -355,7 +355,6 @@ function App() {
                   ViewportModes.scale,
                 ].includes(mode)
               ) {
-                commitTransaction();
                 rollbackTransaction();
                 setmode(ViewportModes.navigate);
               }

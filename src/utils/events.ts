@@ -7,6 +7,14 @@ export interface ViewportEvent {
   info: ViewportEventAxesInfo | ViewportEventMeshInfo;
 }
 
+/**
+ * We're storing both final and initial values,
+ * 
+ * Initials will be helpful in undo.
+ * 
+ * Finals will be helpful in achieving the final state in the least
+ * number of steps
+ */
 export interface ViewportEventAxesInfo {
   objectID: number;
   finalX: number;
@@ -23,6 +31,10 @@ export interface ViewportEventMeshInfo {
   method: MeshLoadMethod;
 }
 
+/**
+ * Pushes a viewport event onto the event history stack
+ * @param arg The Viewport Event
+ */
 export const addVE = (arg: ViewportEvent) => {
   window.viewportEventHistory.push(arg);
 };
@@ -161,7 +173,12 @@ export const reverseVE = (ve: ViewportEvent | number) => {
     return false;
   }
 
+  /**
+   * How we'll reverse an event will vary
+   * on what type of an event it is
+   */
   switch (ve.type) {
+    // reapply previous scale
     case ViewportEventType.scale: {
       const info = ve.info as ViewportEventAxesInfo;
       const obj = window.scene.getObjectById(info.objectID);
@@ -170,6 +187,7 @@ export const reverseVE = (ve: ViewportEvent | number) => {
       return true;
     }
 
+    // reapply previous position
     case ViewportEventType.grab: {
       const info = ve.info as ViewportEventAxesInfo;
       const obj = window.scene.getObjectById(info.objectID);
@@ -178,6 +196,7 @@ export const reverseVE = (ve: ViewportEvent | number) => {
       return true;
     }
 
+    // reapply previous rotation
     case ViewportEventType.rotate: {
       const info = ve.info as ViewportEventAxesInfo;
       const obj = window.scene.getObjectById(info.objectID);
@@ -186,6 +205,7 @@ export const reverseVE = (ve: ViewportEvent | number) => {
       return true;
     }
 
+    // delete the mesh
     case ViewportEventType.loadMesh: {
       const info = ve.info as ViewportEventAxesInfo;
       const obj = window.scene.getObjectById(info.objectID);
@@ -193,6 +213,14 @@ export const reverseVE = (ve: ViewportEvent | number) => {
       return true;
     }
 
+    /**
+     * Reversing delete is tricky,
+     * since we not only have to load the mesh back,
+     * we have to apply every transform to it that it had applied before.
+     *
+     * We'll also have go and change the id referring to the previous mesh
+     * by the new one we load in so that further undo doesn't break.
+     */
     case ViewportEventType.delete: {
       const info = ve.info as ViewportEventMeshInfo;
       const loader = getLoader(info.method);
@@ -231,6 +259,9 @@ export const reverseVE = (ve: ViewportEvent | number) => {
               rotation.finalY,
               rotation.finalZ
             );
+
+          // Replace previous object's Ids with the new one's throughout all
+          // so that further undo doesn't break
           for (let i = 0; i < window.viewportEventHistory.length; i++)
             if (window.viewportEventHistory[i].info.objectID === info.objectID)
               window.viewportEventHistory[i].info.objectID = mesh.id;

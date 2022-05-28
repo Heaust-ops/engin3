@@ -2,6 +2,13 @@ import { Vector3 } from "three";
 import { WorkingAxes } from "../enums";
 import { MousePosition } from "../interfaces";
 
+/**
+ *
+ * @param ndcMousePosition Optional: The Normalized Device Coordinates / the normalized mouse position.
+ *
+ * If not given assumes the current one.
+ * @returns The Vector3 equivalent in the 3D world.
+ */
 export const getMousePositionIn3D = (ndcMousePosition?: MousePosition) => {
   if (!ndcMousePosition) ndcMousePosition = window.ndcMousePosition;
   const coords = new Vector3(ndcMousePosition.x, ndcMousePosition.y, 0);
@@ -22,6 +29,12 @@ export const getMousePositionIn3D = (ndcMousePosition?: MousePosition) => {
   return vectorin3d;
 };
 
+/**
+ *
+ * @param vec A Vector3
+ * @param axis The WorkingAxis on which the component is required
+ * @returns The Vector Component on that WorkingAxis
+ */
 export const getVector3Component = (vec: Vector3, axis: WorkingAxes) => {
   switch (axis) {
     case WorkingAxes.all:
