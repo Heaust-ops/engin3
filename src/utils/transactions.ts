@@ -1,5 +1,5 @@
 import { Material } from "three";
-import { ViewportEventType } from "../enums";
+import { Lights, MeshLoadMethod, ViewportEventType } from "../enums";
 import {
   addVE,
   getLatestVE,
@@ -8,18 +8,44 @@ import {
   ViewportEventAxesInfo,
   ViewportEventMeshInfo,
 } from "./events";
+import { doForSelectedItems } from "./utils";
 import { isType } from "./validity";
+
+export type AxesInfoArray = [number /** x */, number /** y */, number /** z */];
+export type InitialMeshInfo = {
+  path: string;
+  method: MeshLoadMethod;
+};
+export type PendingTransactionInitials = AxesInfoArray | InitialMeshInfo | null;
+export interface PendingTransaction {
+  type: ViewportEventType;
+  objectID: number;
+  initials: PendingTransactionInitials;
+}
 
 /**
  * Properly gets rid of a mesh
  * @param mesh The Mesh to Remove
  */
-export const removeMesh = (mesh: THREE.Mesh) => {
+export const removeMesh = (mesh: THREE.Object3D) => {
   if (isType(mesh, "Mesh")) {
-    mesh.geometry.dispose();
-    (mesh.material as Material).dispose();
+    (mesh as THREE.Mesh).geometry.dispose();
+    ((mesh as THREE.Mesh).material as Material).dispose();
     window.scene.remove(mesh!);
-  } else if (isType(mesh, "Group", "SkinnedMesh")) {
+  } else if (isType(mesh, ...Object.values(Lights))) {
+    let helper: THREE.PointLightHelper;
+    window.scene.traverse((item) => {
+      if (
+        item.type.includes("LightHelper") &&
+        (item as THREE.PointLightHelper).light.id === mesh.id
+      )
+        helper = item as THREE.PointLightHelper;
+    });
+    window.scene.remove(helper!);
+    window.scene.remove(mesh!);
+  }
+  // Properly get Rid of Groups
+  else if (isType(mesh, "Group", "SkinnedMesh")) {
     const children_to_remove = [] as THREE.Object3D[];
     mesh.traverse((child) => {
       children_to_remove.push(child);
@@ -40,8 +66,11 @@ export const removeMesh = (mesh: THREE.Mesh) => {
  * Removes the currently selected mesh.
  */
 export const removeSelectedMesh = () => {
-  removeMesh(window.selectedItem as THREE.Mesh);
-  window.selectedItem = null;
+  if (!window.selectedItems.length) return;
+  doForSelectedItems((x) => {
+    removeMesh(x);
+  });
+  window.selectedItems = [];
 };
 
 /**
@@ -52,60 +81,56 @@ export const removeSelectedMesh = () => {
  * and sets a new transaction of the given type in motion.
  */
 export const startTransaction = (type: ViewportEventType) => {
-  window.pendingTransactionType = type;
-  window.pendingTransactionObjectID = window.selectedItem?.id ?? null;
-  if (!window.selectedItem) return;
+  window.pendingTransactions = [];
+  if (type === ViewportEventType.loadMesh) return;
+  doForSelectedItems((item) => {
+    let initials: PendingTransactionInitials = null;
+    // Saving essential information required during commiting
+    switch (type) {
+      case ViewportEventType.scale:
+        initials = [item.scale.x, item.scale.y, item.scale.z];
+        break;
 
-  // Saving essential information required during commiting
-  switch (type) {
-    case ViewportEventType.scale:
-      window.pendingTransactionInitials = [
-        window.selectedItem.scale.x,
-        window.selectedItem.scale.y,
-        window.selectedItem.scale.z,
-      ];
-      break;
+      case ViewportEventType.grab:
+        initials = [item.position.x, item.position.y, item.position.z];
+        break;
 
-    case ViewportEventType.grab:
-      window.pendingTransactionInitials = [
-        window.selectedItem.position.x,
-        window.selectedItem.position.y,
-        window.selectedItem.position.z,
-      ];
-      break;
+      case ViewportEventType.rotate:
+        initials = [item.rotation.x, item.rotation.y, item.rotation.z];
+        break;
 
-    case ViewportEventType.rotate:
-      window.pendingTransactionInitials = [
-        window.selectedItem.rotation.x,
-        window.selectedItem.rotation.y,
-        window.selectedItem.rotation.z,
-      ];
-      break;
+      /** case ViewportEventType.loadMesh:
+        
+         * Logic implemented in models directly
+         * As it requires information from the callback
+         *
+         * We could've passed the mechanism as a preprocess step
+         * but that'd make the code less declarative
+         
+        break;*/
 
-    case ViewportEventType.loadMesh:
-      /**
-       * Logic implemented in models directly
-       * As it requires information from the callback
-       *
-       * We could've passed the mechanism as a preprocess step
-       * but that'd make the code less declarative
-       */
-      break;
+      case ViewportEventType.delete:
+        const ve = getLatestVE(
+          ViewportEventType.loadMesh,
+          null,
+          (arg) => arg.info.objectID === item.id
+        );
+        if (ve) {
+          initials = {
+            path: (ve.info as ViewportEventMeshInfo).path,
+            method: (ve.info as ViewportEventMeshInfo).method,
+          };
+        }
 
-    case ViewportEventType.delete:
-      window.pendingTransactionObjectID = window.selectedItem.id ?? null;
-      const ve = getLatestVE(
-        ViewportEventType.loadMesh,
-        null,
-        (arg) => arg.info.objectID === window.selectedItem?.id
-      );
-      if (ve)
-        window.pendingMeshTransactionInfo = {
-          path: (ve.info as ViewportEventMeshInfo).path,
-          method: (ve.info as ViewportEventMeshInfo).method,
-        };
-      break;
-  }
+        break;
+    }
+
+    window.pendingTransactions.push({
+      type,
+      objectID: item.id,
+      initials,
+    });
+  });
 };
 
 /**
@@ -117,92 +142,84 @@ export const startTransaction = (type: ViewportEventType) => {
  *
  */
 export const commitTransaction = () => {
-  if (!window.pendingTransactionType) return;
+  window.pendingTransactions.forEach((pendingTransaction) => {
+    const type = pendingTransaction.type;
 
-  const type = window.pendingTransactionType;
-  window.pendingTransactionType = null;
+    let info: ViewportEventMeshInfo | ViewportEventAxesInfo | null = null;
+    let transactedObject: THREE.Object3D | null = null;
 
-  let info: ViewportEventMeshInfo | ViewportEventAxesInfo | null = null;
-  let transactedObject: THREE.Object3D | null = null;
-
-  if (window.pendingTransactionObjectID)
     transactedObject =
-      window.scene.getObjectById(window.pendingTransactionObjectID) ?? null;
+      window.scene.getObjectById(pendingTransaction.objectID) ?? null;
 
-  // Prepare Event Information
-  switch (type) {
-    case ViewportEventType.scale:
-      if (transactedObject && window.pendingTransactionInitials)
-        info = {
-          objectID: transactedObject.id,
-          initialX: window.pendingTransactionInitials[0],
-          initialY: window.pendingTransactionInitials[1],
-          initialZ: window.pendingTransactionInitials[2],
-          finalX: transactedObject.scale.x,
-          finalY: transactedObject.scale.y,
-          finalZ: transactedObject.scale.z,
-        };
-      break;
+    // Prepare Event Information
+    switch (type) {
+      case ViewportEventType.scale:
+        if (transactedObject && pendingTransaction.initials)
+          info = {
+            objectID: transactedObject.id,
+            initialX: (pendingTransaction.initials as AxesInfoArray)[0],
+            initialY: (pendingTransaction.initials as AxesInfoArray)[1],
+            initialZ: (pendingTransaction.initials as AxesInfoArray)[2],
+            finalX: transactedObject.scale.x,
+            finalY: transactedObject.scale.y,
+            finalZ: transactedObject.scale.z,
+          };
+        break;
 
-    case ViewportEventType.grab:
-      if (transactedObject && window.pendingTransactionInitials)
-        info = {
-          objectID: transactedObject.id,
-          initialX: window.pendingTransactionInitials[0],
-          initialY: window.pendingTransactionInitials[1],
-          initialZ: window.pendingTransactionInitials[2],
-          finalX: transactedObject.position.x,
-          finalY: transactedObject.position.y,
-          finalZ: transactedObject.position.z,
-        };
-      break;
+      case ViewportEventType.grab:
+        if (transactedObject && pendingTransaction.initials)
+          info = {
+            objectID: transactedObject.id,
+            initialX: (pendingTransaction.initials as AxesInfoArray)[0],
+            initialY: (pendingTransaction.initials as AxesInfoArray)[1],
+            initialZ: (pendingTransaction.initials as AxesInfoArray)[2],
+            finalX: transactedObject.position.x,
+            finalY: transactedObject.position.y,
+            finalZ: transactedObject.position.z,
+          };
+        break;
 
-    case ViewportEventType.rotate:
-      if (transactedObject && window.pendingTransactionInitials)
-        info = {
-          objectID: transactedObject.id,
-          initialX: window.pendingTransactionInitials[0],
-          initialY: window.pendingTransactionInitials[1],
-          initialZ: window.pendingTransactionInitials[2],
-          finalX: transactedObject.rotation.x,
-          finalY: transactedObject.rotation.y,
-          finalZ: transactedObject.rotation.z,
-        };
-      break;
+      case ViewportEventType.rotate:
+        if (transactedObject && pendingTransaction.initials)
+          info = {
+            objectID: transactedObject.id,
+            initialX: (pendingTransaction.initials as AxesInfoArray)[0],
+            initialY: (pendingTransaction.initials as AxesInfoArray)[1],
+            initialZ: (pendingTransaction.initials as AxesInfoArray)[2],
+            finalX: transactedObject.rotation.x,
+            finalY: transactedObject.rotation.y,
+            finalZ: transactedObject.rotation.z,
+          };
+        break;
 
-    case ViewportEventType.loadMesh:
-      if (
-        window.pendingMeshTransactionInfo &&
-        window.pendingTransactionObjectID
-      )
-        info = {
-          objectID: window.pendingTransactionObjectID,
-          ...window.pendingMeshTransactionInfo,
-        };
-      break;
+      case ViewportEventType.loadMesh:
+        if (
+          (pendingTransaction.initials as InitialMeshInfo).path &&
+          pendingTransaction.objectID
+        )
+          info = {
+            objectID: pendingTransaction.objectID,
+            ...(pendingTransaction.initials as InitialMeshInfo),
+          };
+        break;
 
-    case ViewportEventType.delete:
-      if (
-        window.pendingMeshTransactionInfo &&
-        window.pendingTransactionObjectID
-      )
-        info = {
-          objectID: window.pendingTransactionObjectID,
-          ...window.pendingMeshTransactionInfo,
-        };
-      break;
-  }
+      case ViewportEventType.delete:
+        if ((pendingTransaction.initials as InitialMeshInfo).path)
+          info = {
+            objectID: pendingTransaction.objectID,
+            ...(pendingTransaction.initials as InitialMeshInfo),
+          };
+        break;
+    }
 
-  if (info) {
-    addVE({ type, info });
-  } else {
-    console.log(
-      window.pendingMeshTransactionInfo,
-      window.pendingTransactionObjectID
-    );
-  }
+    if (info) {
+      addVE({ type, info });
+    } else {
+      console.log(pendingTransaction);
+    }
+  });
 
-  window.pendingTransactionObjectID = null;
+  window.pendingTransactions = [];
 };
 
 /**
@@ -217,7 +234,7 @@ export const commitTransaction = () => {
  */
 export const rollbackTransaction = () => {
   // Do not rollback mid transaction
-  if (window.pendingTransactionObjectID) return;
+  if (window.pendingTransactions.length) return;
   const ve = popVE();
   if (ve) reverseVE(ve);
 };

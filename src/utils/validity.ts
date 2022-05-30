@@ -1,8 +1,8 @@
 export const isSelectedMesh = () =>
-  window.selectedItem && ["Mesh"].includes(window.selectedItem.type);
+  window.selectedItems && window.selectedItems.filter(x=>["Mesh"].includes(x.type));
 
 export const isSelectedType = (...args: string[]) =>
-  window.selectedItem && args.includes(window.selectedItem.type);
+  window.selectedItems && window.selectedItems.filter(x=>args.includes(x.type));
 
 export const isMesh = (arg: any) =>
   arg?.type && typeof arg.type === "string" && ["Mesh"].includes(arg.type);

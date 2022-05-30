@@ -3,7 +3,7 @@ import ContextMenuWrapperDiv from "./components/ContextMenu/ContextMenuWrapperDi
 import styles from "./App.module.css";
 import { useEffect, useState } from "react";
 import { viewportInit } from "./three/viewport";
-import { viewportAddMenu } from "./contextMenus/viewportAdd";
+import { viewportAddMenu } from "./contextMenus/viewportAdd/viewportAdd";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import {
   MeshLoadMethod,
@@ -16,18 +16,25 @@ import { Material, Vector3 } from "three";
 import { isSelectedType } from "./utils/validity";
 import {
   commitTransaction,
-  removeSelectedMesh,
+  PendingTransaction,
   rollbackTransaction,
   startTransaction,
 } from "./utils/transactions";
 import { loadFBXModel, loadGLTFModel } from "./utils/models";
 import { ViewportEvent } from "./utils/events";
-import { getMousePositionIn3D, getVector3Component } from "./utils/utils";
+import {
+  doForSelectedItems,
+  getMousePositionIn3D,
+  getVector3Component,
+} from "./utils/utils";
+import { ViewportInteractionAllowed } from "./utils/constants";
+import { handleHotkeys } from "./utils/handleHotkeys";
+import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass";
 
 declare global {
   interface Window {
     scene: THREE.Scene;
-    selectedItem: THREE.Object3D | null;
+    selectedItems: THREE.Object3D[];
     mousePosition: MousePosition;
     ndcMousePosition: MousePosition;
     viewportMode: ViewportModes;
@@ -36,26 +43,18 @@ declare global {
     defaultMaterial: Material;
     viewportCamera: THREE.PerspectiveCamera;
     viewportEventHistory: ViewportEvent[];
-    pendingTransactionType: ViewportEventType | null;
-    pendingTransactionObjectID: number | null;
-    pendingTransactionInitials:
-      | [number /** x */, number /** y */, number /** z */]
-      | null;
-    pendingMeshTransactionInfo: {
-      path: string;
-      method: MeshLoadMethod;
-    } | null;
+    outlinePass: OutlinePass;
+    pendingTransactions: PendingTransaction[];
+    multiselect: boolean;
   }
 }
 
-window.pendingTransactionType = null;
+window.pendingTransactions = [];
 window.mousePosition = { x: -1, y: -1 };
 window.ndcMousePosition = { x: -1, y: -1 };
 window.workingAxis = WorkingAxes.all;
 window.viewportMode = ViewportModes.navigate;
 window.viewportEventHistory = [];
-window.pendingTransactionInitials = null;
-window.pendingMeshTransactionInfo = null;
 
 const keepTrackOfCursor = (mouseMoveEvent: MouseEvent) => {
   window.mousePosition.x = mouseMoveEvent.pageX;
@@ -94,19 +93,19 @@ function App() {
       [ViewportModes.grab, ViewportModes.rotate, ViewportModes.scale].includes(
         mode
       ) &&
-      !window.pendingTransactionObjectID
+      !window.pendingTransactions.length
     )
       startTransaction(mode as unknown as ViewportEventType);
 
     if ([ViewportModes.grab, ViewportModes.rotate].includes(mode)) {
       let prevPos = getMousePositionIn3D(window.ndcMousePosition);
-      if (!window.selectedItem) return;
+      if (!window.selectedItems) return;
 
       // Interval
       mouseDeltaInterval = setInterval(() => {
         const currentPos = getMousePositionIn3D(window.ndcMousePosition);
         const delta = currentPos.clone().sub(prevPos);
-        if (window.selectedItem) {
+        if (window.selectedItems) {
           // Grab Logic
           if (mode === ViewportModes.grab) {
             const translateComponent = getVector3Component(
@@ -126,7 +125,9 @@ function App() {
               );
             }
 
-            window.selectedItem.position.add(shift);
+            doForSelectedItems((x) => {
+              x.position.add(shift);
+            });
           }
           // Rotate Logic
           if (mode === ViewportModes.rotate) {
@@ -141,10 +142,10 @@ function App() {
               delta.y * componentVector.y,
               delta.z * componentVector.z
             );
-            window.selectedItem.rotateOnWorldAxis(
-              axis.normalize(),
-              angularComp / 7.5
-            );
+
+            doForSelectedItems((x) => {
+              x.rotateOnWorldAxis(axis.normalize(), angularComp / 7.5);
+            });
           }
         }
         prevPos = currentPos;
@@ -158,110 +159,8 @@ function App() {
 
   // Handle Key Stack
   useEffect(() => {
-    // Handle Hotkeys
-    const handleHotkeys = (hotkeyStack: KeyboardEvent["key"][]) => {
-      switch (hotkeyStack.join("")) {
-        // Undo
-        case "controlz":
-          rollbackTransaction();
-          break;
-        case "o":
-          break;
-
-        // Deletion and Changing Working Axes
-        case "x":
-          if (window.viewportMode === ViewportModes.navigate) {
-            startTransaction(ViewportEventType.delete);
-            removeSelectedMesh();
-            commitTransaction();
-            /** End of Deletion Logic */
-          } else if (
-            [
-              ViewportModes.grab,
-              ViewportModes.rotate,
-              ViewportModes.scale,
-            ].includes(window.viewportMode)
-          )
-            window.workingAxis = WorkingAxes.x;
-          break;
-        case "y":
-          if (
-            [
-              ViewportModes.grab,
-              ViewportModes.rotate,
-              ViewportModes.scale,
-            ].includes(window.viewportMode)
-          )
-            window.workingAxis = WorkingAxes.y;
-          break;
-        case "z":
-          if (
-            [
-              ViewportModes.grab,
-              ViewportModes.rotate,
-              ViewportModes.scale,
-            ].includes(window.viewportMode)
-          )
-            window.workingAxis = WorkingAxes.z;
-          break;
-        case "shiftx":
-          if (
-            [
-              ViewportModes.grab,
-              ViewportModes.rotate,
-              ViewportModes.scale,
-            ].includes(window.viewportMode)
-          )
-            window.workingAxis = WorkingAxes.notx;
-          break;
-        case "shifty":
-          if (
-            [
-              ViewportModes.grab,
-              ViewportModes.rotate,
-              ViewportModes.scale,
-            ].includes(window.viewportMode)
-          )
-            window.workingAxis = WorkingAxes.noty;
-          break;
-        case "shiftz":
-          if (
-            [
-              ViewportModes.grab,
-              ViewportModes.rotate,
-              ViewportModes.scale,
-            ].includes(window.viewportMode)
-          )
-            window.workingAxis = WorkingAxes.notz;
-          break;
-
-        // Changing Viewport Modes
-        // Grab
-        case "g":
-          if (isSelectedType("Mesh", "Group", "SkinnedMesh"))
-            window.viewportMode === ViewportModes.grab
-              ? setmode(ViewportModes.navigate)
-              : setmode(ViewportModes.grab);
-          break;
-        // Rotate
-        case "r":
-          if (isSelectedType("Mesh", "Group", "SkinnedMesh"))
-            window.viewportMode === ViewportModes.rotate
-              ? setmode(ViewportModes.navigate)
-              : setmode(ViewportModes.rotate);
-          break;
-        // Scale
-        case "s":
-          if (isSelectedType("Mesh", "Group", "SkinnedMesh"))
-            window.viewportMode === ViewportModes.scale
-              ? setmode(ViewportModes.navigate)
-              : setmode(ViewportModes.scale);
-          break;
-      }
-    };
-
     // Handle hotkeys on change to the key stack
-    handleHotkeys(keyStack);
+    handleHotkeys(keyStack, setmode);
 
     // Add Keys to the Stack
     const onKeyDown = (ev: KeyboardEvent) => {
@@ -317,7 +216,6 @@ function App() {
       <ContextMenuWrapperDiv
         onDrop={(ev) => {
           const model = ev.dataTransfer.items[0].getAsFile();
-          console.log(model);
           const modelURL = model ? URL.createObjectURL(model) : null;
           if (modelURL) {
             switch (model!.type) {
@@ -366,7 +264,7 @@ function App() {
           // Handle Scaling
           if (
             window.viewportMode === ViewportModes.scale && // Handle Scaling
-            isSelectedType("Mesh", "Group", "SkinnedMesh")
+            isSelectedType(...ViewportInteractionAllowed)
           ) {
             const scalingFactor =
               Math.sign(ev.deltaY) < 0
@@ -376,7 +274,10 @@ function App() {
               new Vector3(scalingFactor, scalingFactor, scalingFactor),
               window.workingAxis
             );
-            (window.selectedItem as THREE.Mesh).scale.add(scalingVector);
+
+            doForSelectedItems((x) => {
+              (x as THREE.Mesh).scale.add(scalingVector);
+            });
           }
         }}
         menus={menus}

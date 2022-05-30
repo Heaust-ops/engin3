@@ -20,6 +20,7 @@ export enum MeshLoadMethod {
   loadPrimitiveBuffer = "loadPrimitiveBuffer",
   loadGLTF = "loadGLTF",
   loadFBX = "loadFBX",
+  loadLight = "loadLight",
 }
 
 export enum ViewportEventType {
@@ -39,4 +40,11 @@ export enum Primitives {
   cone = "cone",
   capsule = "capsule",
   icosahedron = "icosahedron",
+}
+
+export enum Lights {
+  directional = "PointLight",
+  hemispehre = "DirectionalLight",
+  point = "HemisphereLight",
+  spot = "SpotLight",
 }

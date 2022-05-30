@@ -4,12 +4,17 @@ import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass.js";
 import { ViewportModes } from "../enums";
+import {
+  doForSelectedItems,
+  selectObject3D,
+  unselectObject3D,
+} from "../utils/utils";
+import { NonSelectionTypes } from "../utils/constants";
 
 var scene = new THREE.Scene();
 
-// It is being used as a window attribute, just not in this file.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-var selectedItem = null;
+window.selectedItems = [];
+window.multiselect = false;
 window.scene = scene;
 window.defaultMaterial = new THREE.MeshStandardMaterial({
   color: 0x4073dc,
@@ -17,6 +22,9 @@ window.defaultMaterial = new THREE.MeshStandardMaterial({
 });
 
 export const viewportInit = (targetClass = "viewport") => {
+  // Only run when viewport isn't already initialised
+  if (window.scene.children.length > 0) return;
+
   const target = document.getElementsByClassName(targetClass);
   if (target) {
     target[0].innerHTML = "";
@@ -132,16 +140,16 @@ export const viewportInit = (targetClass = "viewport") => {
     const renderPass = new RenderPass(scene, window.viewportCamera); // make render pass
     composer.addPass(renderPass); // add render pass
 
-    const outlinePass = new OutlinePass(
+    window.outlinePass = new OutlinePass(
       new THREE.Vector2(Cwidth(), Cheight()),
       scene,
       window.viewportCamera
     );
-    outlinePass.visibleEdgeColor = new THREE.Color("#FFCC54");
-    outlinePass.hiddenEdgeColor = new THREE.Color("#FFCC54");
-    outlinePass.edgeStrength = 3;
-    outlinePass.edgeGlow = 0;
-    composer.addPass(outlinePass);
+    window.outlinePass.visibleEdgeColor = new THREE.Color("#FFCC54");
+    window.outlinePass.hiddenEdgeColor = new THREE.Color("#FFCC54");
+    window.outlinePass.edgeStrength = 3;
+    window.outlinePass.edgeGlow = 0;
+    composer.addPass(window.outlinePass);
 
     (target[0] as HTMLDivElement).onclick = (ev) => {
       if (ev.button === 0 && window.viewportMode === ViewportModes.navigate) {
@@ -149,31 +157,52 @@ export const viewportInit = (targetClass = "viewport") => {
         CheckRC(
           window.viewportCamera,
           (intersects: THREE.Intersection[]) => {
+            // Handle multiselect;
+            if (!window.multiselect) {
+              window.selectedItems = [];
+              window.outlinePass.selectedObjects = [];
+            }
             // This is to avoid selecting helpers
             let selectedMeshIndex = 0;
             for (let i = 0; i < intersects.length; i++)
               if (
                 ["Mesh", "Group", "SkinnedMesh"].includes(
                   intersects[i].object.type
-                )
+                ) ||
+                intersects[i].object.type.includes("LightHelper")
               ) {
                 selectedMeshIndex = i;
               }
 
-            // Set the Selected Item to the Closest Mesh
-            window.selectedItem = intersects[selectedMeshIndex].object;
+            // Set the Largest Shell as Selected
+            let selectedItem: THREE.Object3D | null =
+              intersects[selectedMeshIndex].object;
+            if (!selectedItem || NonSelectionTypes.includes(selectedItem.type)) return;
             while (
-              typeof window.selectedItem?.parent?.name === "string" &&
-              window.selectedItem?.parent?.type !== "Scene"
+              typeof selectedItem?.parent?.name === "string" &&
+              selectedItem?.parent?.type !== "Scene"
             )
-              window.selectedItem = (window.selectedItem as THREE.Mesh).parent;
-            outlinePass.selectedObjects = [
-              window.selectedItem ?? intersects[selectedMeshIndex].object,
-            ];
+              selectedItem = (selectedItem as THREE.Mesh).parent;
+
+            // Actually select the Lights if selected helper
+            if ((selectedItem as THREE.PointLightHelper)?.light) {
+              selectedItem = (selectedItem as THREE.PointLightHelper).light;
+            }
+
+            let itemAlreadySelected = false;
+            doForSelectedItems((item) => {
+              if (item.id === selectedItem!.id) itemAlreadySelected = true;
+            });
+
+            if (selectedItem && itemAlreadySelected) {
+              unselectObject3D(selectedItem);
+            } else if (selectedItem) {
+              selectObject3D(selectedItem);
+            }
           },
           () => {
-            window.selectedItem = null;
-            outlinePass.selectedObjects = [];
+            window.selectedItems = [];
+            window.outlinePass.selectedObjects = [];
           }
         );
       }
