@@ -7,7 +7,6 @@ export const ViewportInteractionAllowed = [
   ...Object.values(Lights),
 ];
 
-export const NonSelectionTypes = [
-  "GridHelper",
-  "AxesHelper"
-]
+export const TypesThatNeedHelpers = [...Object.values(Lights), "Camera"];
+
+export const NonSelectionTypes = ["GridHelper", "AxesHelper"];

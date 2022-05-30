@@ -9,9 +9,9 @@ export interface ViewportEvent {
 
 /**
  * We're storing both final and initial values,
- * 
+ *
  * Initials will be helpful in undo.
- * 
+ *
  * Finals will be helpful in achieving the final state in the least
  * number of steps
  */
@@ -158,6 +158,74 @@ export const getLatestVEIndex = (
 };
 
 /**
+ * Duplicates or Revives an Object.
+ *
+ * This is tricky,
+ * since we not only have to load the mesh back,
+ * we have to apply every transform to it that it had applied before.
+ *
+ * We'll also have go and change the id referring to the previous mesh
+ * by the new one we load in if we revive so that further undo doesn't break.
+ *
+ * @param ve The viewport event
+ * @param asTransaction
+ * @returns
+ */
+export const reloadFromVE = (
+  ve: ViewportEvent | number,
+  asTransaction = false
+) => {
+  try {
+    if (typeof ve === "number") ve = window.viewportEventHistory[ve];
+  } catch {
+    return false;
+  }
+
+  const info = ve.info as ViewportEventMeshInfo;
+  const loader = getLoader(info.method);
+
+  // Get Latest Transforms before deletion
+  const scale = getLatestVE(
+    ViewportEventType.scale,
+    null,
+    (arg) => (arg.info as ViewportEventAxesInfo).objectID === info.objectID
+  )?.info as ViewportEventAxesInfo | null;
+  const position = getLatestVE(
+    ViewportEventType.grab,
+    null,
+    (arg) => (arg.info as ViewportEventAxesInfo).objectID === info.objectID
+  )?.info as ViewportEventAxesInfo | null;
+  const rotation = getLatestVE(
+    ViewportEventType.rotate,
+    null,
+    (arg) => (arg.info as ViewportEventAxesInfo).objectID === info.objectID
+  )?.info as ViewportEventAxesInfo | null;
+
+  // Load the Model and Apply any tranforms found
+  loader({
+    modelPath: info.path,
+    preprocess: (mesh) => {
+      if (scale) mesh.scale.set(scale.finalX, scale.finalY, scale.finalZ);
+      if (position)
+        mesh.position.set(position.finalX, position.finalY, position.finalZ);
+      if (rotation)
+        mesh.rotation.set(rotation.finalX, rotation.finalY, rotation.finalZ);
+
+      // Replace previous object's Ids with the new one's throughout all
+      // so that further undo doesn't break when reviving
+      if ((ve as ViewportEvent).type === ViewportEventType.delete) {
+        for (let i = 0; i < window.viewportEventHistory.length; i++)
+          if (window.viewportEventHistory[i].info.objectID === info.objectID)
+            window.viewportEventHistory[i].info.objectID = mesh.id;
+      }
+    },
+    asTransaction,
+  });
+
+  return true;
+};
+
+/**
  * This function applies the changes until just before the given VE
  * In case of a load or a remove VE, it just performs the reverse of it
  * @param ve The ViewportEvent or its Index to reverse
@@ -213,64 +281,8 @@ export const reverseVE = (ve: ViewportEvent | number) => {
       return true;
     }
 
-    /**
-     * Reversing delete is tricky,
-     * since we not only have to load the mesh back,
-     * we have to apply every transform to it that it had applied before.
-     *
-     * We'll also have go and change the id referring to the previous mesh
-     * by the new one we load in so that further undo doesn't break.
-     */
-    case ViewportEventType.delete: {
-      const info = ve.info as ViewportEventMeshInfo;
-      const loader = getLoader(info.method);
-
-      // Get Latest Transforms before deletion
-      const scale = getLatestVE(
-        ViewportEventType.scale,
-        null,
-        (arg) => (arg.info as ViewportEventAxesInfo).objectID === info.objectID
-      )?.info as ViewportEventAxesInfo | null;
-      const position = getLatestVE(
-        ViewportEventType.grab,
-        null,
-        (arg) => (arg.info as ViewportEventAxesInfo).objectID === info.objectID
-      )?.info as ViewportEventAxesInfo | null;
-      const rotation = getLatestVE(
-        ViewportEventType.rotate,
-        null,
-        (arg) => (arg.info as ViewportEventAxesInfo).objectID === info.objectID
-      )?.info as ViewportEventAxesInfo | null;
-
-      // Load the Model and Apply any tranforms found
-      loader({
-        modelPath: info.path,
-        preprocess: (mesh) => {
-          if (scale) mesh.scale.set(scale.finalX, scale.finalY, scale.finalZ);
-          if (position)
-            mesh.position.set(
-              position.finalX,
-              position.finalY,
-              position.finalZ
-            );
-          if (rotation)
-            mesh.rotation.set(
-              rotation.finalX,
-              rotation.finalY,
-              rotation.finalZ
-            );
-
-          // Replace previous object's Ids with the new one's throughout all
-          // so that further undo doesn't break
-          for (let i = 0; i < window.viewportEventHistory.length; i++)
-            if (window.viewportEventHistory[i].info.objectID === info.objectID)
-              window.viewportEventHistory[i].info.objectID = mesh.id;
-        },
-        asTransaction: false,
-      });
-
-      return true;
-    }
+    case ViewportEventType.delete:
+      return reloadFromVE(ve);
   }
 };
 

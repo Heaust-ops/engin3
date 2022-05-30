@@ -6,7 +6,6 @@ import { viewportInit } from "./three/viewport";
 import { viewportAddMenu } from "./contextMenus/viewportAdd/viewportAdd";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import {
-  MeshLoadMethod,
   ViewportEventType,
   ViewportModes,
   WorkingAxes,

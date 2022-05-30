@@ -9,7 +9,6 @@ import {
   selectObject3D,
   unselectObject3D,
 } from "../utils/utils";
-import { NonSelectionTypes } from "../utils/constants";
 
 var scene = new THREE.Scene();
 
@@ -157,11 +156,6 @@ export const viewportInit = (targetClass = "viewport") => {
         CheckRC(
           window.viewportCamera,
           (intersects: THREE.Intersection[]) => {
-            // Handle multiselect;
-            if (!window.multiselect) {
-              window.selectedItems = [];
-              window.outlinePass.selectedObjects = [];
-            }
             // This is to avoid selecting helpers
             let selectedMeshIndex = 0;
             for (let i = 0; i < intersects.length; i++)
@@ -177,7 +171,7 @@ export const viewportInit = (targetClass = "viewport") => {
             // Set the Largest Shell as Selected
             let selectedItem: THREE.Object3D | null =
               intersects[selectedMeshIndex].object;
-            if (!selectedItem || NonSelectionTypes.includes(selectedItem.type)) return;
+
             while (
               typeof selectedItem?.parent?.name === "string" &&
               selectedItem?.parent?.type !== "Scene"
@@ -196,8 +190,8 @@ export const viewportInit = (targetClass = "viewport") => {
 
             if (selectedItem && itemAlreadySelected) {
               unselectObject3D(selectedItem);
-            } else if (selectedItem) {
-              selectObject3D(selectedItem);
+            } else {
+              selectObject3D(selectedItem, !window.multiselect);
             }
           },
           () => {

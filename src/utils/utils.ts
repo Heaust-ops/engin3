@@ -1,11 +1,27 @@
 import { Vector3 } from "three";
 import { WorkingAxes } from "../enums";
 import { MousePosition } from "../interfaces";
+import { NonSelectionTypes, TypesThatNeedHelpers } from "./constants";
 
 export const doForSelectedItems = (
   action: (selectedItem: THREE.Object3D) => void
 ) => {
   if (window.selectedItems.length) window.selectedItems.forEach(action);
+};
+
+export const getHelper = (arg: THREE.Object3D) => {
+  let helper: THREE.PointLightHelper | null = null;
+  if (arg.type.includes("Light")) {
+    window.scene.traverse((item) => {
+      if (
+        item.type.includes("LightHelper") &&
+        (item as THREE.PointLightHelper).light.id === arg.id
+      )
+        helper = item as THREE.PointLightHelper;
+    });
+  }
+
+  return helper;
 };
 
 /**
@@ -21,32 +37,38 @@ export const highlightObjects = (args: THREE.Object3D[]) => {
  * @param arg The 3D Object to Select
  */
 export const selectObject3D = (
-  arg: THREE.Object3D | THREE.Object3D[],
+  arg: THREE.Object3D | THREE.Object3D[] | null,
   strict = false
 ) => {
-  if (!window.selectedItems) window.selectedItems = [];
-  if (arg instanceof Array) {
-    /**
-     * For Many Objects
-     */
+  if (
+    arg === null ||
+    (arg instanceof Array && arg.length === 0) ||
+    ((arg as THREE.Object3D).type &&
+      NonSelectionTypes.includes((arg as THREE.Object3D).type))
+  ) {
     if (strict) {
-      window.selectedItems = arg;
-      window.outlinePass.selectedObjects = arg;
-    } else {
-      window.selectedItems.concat(arg);
-      window.outlinePass.selectedObjects.concat(arg);
+      window.selectedItems = [];
+      window.outlinePass.selectedObjects = [];
     }
+    return;
+  }
+
+  if (!(arg instanceof Array)) arg = [arg];
+
+  arg.forEach((item) => {
+    if (TypesThatNeedHelpers.includes(item.type)) {
+      const helper = getHelper(item);
+      if (helper) arg = (arg as THREE.Object3D[]).concat(helper);
+    }
+  });
+
+  if (strict) {
+    window.selectedItems = arg;
+    window.outlinePass.selectedObjects = arg;
   } else {
-    /**
-     * For only one Object
-     */
-    if (strict) {
-      window.selectedItems = [arg];
-      window.outlinePass.selectedObjects = [arg];
-    } else {
-      window.selectedItems.push(arg);
-      window.outlinePass.selectedObjects.push(arg);
-    }
+    window.selectedItems = window.selectedItems.concat(arg);
+    window.outlinePass.selectedObjects =
+      window.outlinePass.selectedObjects.concat(arg);
   }
 };
 

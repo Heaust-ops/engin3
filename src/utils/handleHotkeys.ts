@@ -1,12 +1,13 @@
 import { ViewportModes, ViewportEventType, WorkingAxes } from "../enums";
 import { ViewportInteractionAllowed } from "./constants";
+import { getLatestVE, reloadFromVE } from "./events";
 import {
   rollbackTransaction,
   startTransaction,
   removeSelectedMesh,
   commitTransaction,
 } from "./transactions";
-import { doForSelectedItems, selectObject3D } from "./utils";
+import { doForSelectedItems } from "./utils";
 import { isSelectedType } from "./validity";
 
 export const handleHotkeys = (
@@ -114,17 +115,18 @@ export const handleHotkeys = (
     // clone
     case "shiftd":
       if (isSelectedType(...ViewportInteractionAllowed)) {
-        let clones = [] as THREE.Object3D[];
         doForSelectedItems((x) => {
-          clones.push(x.clone());
+          const ve = getLatestVE(
+            ViewportEventType.loadMesh,
+            null,
+            (ve) => ve.info.objectID === x.id
+          );
+          if (ve) reloadFromVE(ve, true);
         });
-        clones.forEach((clone) => {
-          window.scene.add(clone);
-        });
-        selectObject3D(clones);
         setmode(ViewportModes.grab);
       }
       break;
+
     case "shift":
       if (!window.multiselect) window.multiselect = true;
       break;
