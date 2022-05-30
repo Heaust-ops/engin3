@@ -9,6 +9,11 @@ export const doForSelectedItems = (
   if (window.selectedItems.length) window.selectedItems.forEach(action);
 };
 
+/**
+ * Returns ther helper of an object given the object itself
+ * @param arg the object whose helper we want
+ * @returns The helper of the object if it has one
+ */
 export const getHelper = (arg: THREE.Object3D) => {
   let helper: THREE.PointLightHelper | null = null;
   if (arg.type.includes("Light")) {
