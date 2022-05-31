@@ -23,3 +23,21 @@ The code generation is planned to be very human like, so that once we the engine
 
 Not even close, But you can follow it's progress right here on this repo.
 or on my twitter @HeaustA
+
+# Browser Compatiblity?
+
+## Haha no.
+
+Only testing with Chromium as it'll later be packaged with Electron.
+
+# Philosophy
+
+## Context Context Context
+
+Cram as many functionalities as possible into a singular button (ofc only if it makes sense) so that it'll never be free, basically a single button doing different tasks in different modes.
+
+## Transactions: Start, Commit, Rollback
+
+Foundation of the Code generation ( also helps in undo), Any change should be recorded.
+
+Useless changes will be cleaned up regularly for a balance between a decent undo count and memory optimisation.

@@ -5,11 +5,7 @@ import { useEffect, useState } from "react";
 import { viewportInit } from "./three/viewport";
 import { viewportAddMenu } from "./contextMenus/viewportAdd/viewportAdd";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import {
-  ViewportEventType,
-  ViewportModes,
-  WorkingAxes,
-} from "./enums";
+import { ViewportEventType, ViewportModes, WorkingAxes } from "./enums";
 import { MousePosition } from "./interfaces";
 import { Material, Vector3 } from "three";
 import { isSelectedType } from "./utils/validity";
@@ -30,6 +26,9 @@ import { ViewportInteractionAllowed } from "./utils/constants";
 import { handleHotkeys } from "./utils/handleHotkeys";
 import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass";
 
+/**
+ * Heap Variables
+ */
 declare global {
   interface Window {
     scene: THREE.Scene;
@@ -55,39 +54,67 @@ window.workingAxis = WorkingAxes.all;
 window.viewportMode = ViewportModes.navigate;
 window.viewportEventHistory = [];
 
+/**
+ * Keeps the Mouse Position on heap fresh.
+ * @param mouseMoveEvent Mouse Move Event
+ */
 const keepTrackOfCursor = (mouseMoveEvent: MouseEvent) => {
   window.mousePosition.x = mouseMoveEvent.pageX;
   window.mousePosition.y = mouseMoveEvent.pageY;
 };
 
+/**
+ * Because Writing (ev) => ev.preventDefault();
+ * is tiring.
+ */
 const preventDefault = (ev: Event) => {
   ev.preventDefault();
 };
 
+/**
+ * A Hotkey - Menu Map,
+ * If you wanna add Menus,
+ * do it here
+ */
 const menus = {
   hotkeys: {
     shifta: viewportAddMenu,
   },
 };
 
-function App() {
+/**
+ * The Outermost React Component
+ */
+const App = () => {
   const [keyStack, setkeyStack] = useState([] as KeyboardEvent["key"][]);
   const [mode, setmode] = useState(ViewportModes.navigate);
 
-  // Regulating Mode Changes
+  /**
+   * Regulating Mode Changes & Implementing Mode Logic
+   */
   useEffect(() => {
     window.viewportMode = mode;
     let mouseDeltaInterval: NodeJS.Timer;
 
+    /**
+     * We Only want Orbital Controls in Navigate Mode
+     */
     if (window.controls) {
       if (mode !== ViewportModes.navigate) window.controls.enabled = false;
       else window.controls.enabled = true;
     }
 
+    /**
+     * Whenever we change modes from navigate,
+     * we want the Working Axis to be 'All'.
+     */
     if (mode === ViewportModes.navigate) {
       window.workingAxis = WorkingAxes.all;
     }
 
+    /**
+     * Start Tranformation Transaction
+     */
     if (
       [ViewportModes.grab, ViewportModes.rotate, ViewportModes.scale].includes(
         mode
@@ -96,16 +123,24 @@ function App() {
     )
       startTransaction(mode as unknown as ViewportEventType);
 
+    /**
+     * Grab and Rotate Logic
+     */
     if ([ViewportModes.grab, ViewportModes.rotate].includes(mode)) {
       let prevPos = getMousePositionIn3D(window.ndcMousePosition);
       if (!window.selectedItems) return;
 
-      // Interval
+      /**
+       * We using an interval instead of mouse move to get a more accurate
+       * direction vector of the moved cursor.
+       */
       mouseDeltaInterval = setInterval(() => {
         const currentPos = getMousePositionIn3D(window.ndcMousePosition);
         const delta = currentPos.clone().sub(prevPos);
         if (window.selectedItems) {
-          // Grab Logic
+          /**
+           * Handle Grab
+           */
           if (mode === ViewportModes.grab) {
             const translateComponent = getVector3Component(
               delta,
@@ -115,6 +150,9 @@ function App() {
               Math.pow(currentPos.lengthSq(), 1 / 4)
             );
 
+            /**
+             * Do Discrete Steps if Shift is held
+             */
             if (keyStack.join("") === "shift") {
               shift.normalize().multiplyScalar(0.51);
               shift.set(
@@ -128,7 +166,10 @@ function App() {
               x.position.add(shift);
             });
           }
-          // Rotate Logic
+
+          /**
+           * Handle Rotation
+           */
           if (mode === ViewportModes.rotate) {
             const componentVector = getVector3Component(
               new Vector3(1, 1, 1),
@@ -156,24 +197,40 @@ function App() {
     };
   }, [keyStack, mode]);
 
-  // Handle Key Stack
+  /**
+   * Handle the Key Stack
+   */
   useEffect(() => {
-    // Handle hotkeys on change to the key stack
+    /**
+     * React to Changes
+     */
     handleHotkeys(keyStack, setmode);
 
-    // Add Keys to the Stack
+    /**
+     * Add keys to the Key Stack
+     * @param ev Key Down Event
+     */
     const onKeyDown = (ev: KeyboardEvent) => {
       const targetKey = ev.key.toLowerCase();
 
-      // Clear the key first incase keyup event failed to clear it
+      /**
+       * If the key is just pressed,
+       * It shouldn't already be anywhere in the stack.
+       * Ensure that.
+       */
       if (keyStack.indexOf(targetKey) >= 0)
         setkeyStack(keyStack.filter((el) => el !== targetKey));
 
-      // Now add the Key
+      /**
+       * Push the Key to the Stack
+       */
       if (!keyStack.includes(targetKey)) setkeyStack([...keyStack, targetKey]);
     };
 
-    // Release Keys from Stack
+    /**
+     * Release Keys from the Stack
+     * @param ev Key Up Event
+     */
     const onKeyUp = (ev: KeyboardEvent) => {
       const targetKey = ev.key.toLowerCase();
 
@@ -181,25 +238,31 @@ function App() {
         setkeyStack(keyStack.filter((el) => el !== targetKey));
     };
 
+    /** Implement Key Stack Handlers */
     document.addEventListener("keydown", onKeyDown);
     document.addEventListener("keyup", onKeyUp);
 
     return () => {
+      // Cleanup
       document.removeEventListener("keydown", onKeyDown);
       document.removeEventListener("keyup", onKeyUp);
     };
   }, [keyStack]);
 
-  // On Initial Mount
+  /** Initializations on First Mount */
   useEffect(() => {
+    /** Initialize the ThreeJs Scene */
     viewportInit();
-    // Keeping track of mouse cursor
+
+    /** Keep track of the Cursor */
     document.addEventListener("mousemove", keepTrackOfCursor, false);
-    // Don't open stuff in browser on drop
+
+    /** We're handling drag and drop, don't let the browser do it. */
     window.addEventListener("dragover", preventDefault, false);
     window.addEventListener("drop", preventDefault, false);
 
     return () => {
+      // Cleanup
       document.removeEventListener("mousemove", keepTrackOfCursor, false);
       window.removeEventListener("dragover", preventDefault, false);
       window.removeEventListener("drop", preventDefault, false);
@@ -214,6 +277,12 @@ function App() {
       {/* Viewport */}
       <ContextMenuWrapperDiv
         onDrop={(ev) => {
+          /**
+           * If a Model is Dropped, Load it into the Scene,
+           * Works rn for:
+           * - FBX
+           * - GLTF
+           */
           const model = ev.dataTransfer.items[0].getAsFile();
           const modelURL = model ? URL.createObjectURL(model) : null;
           if (modelURL) {
@@ -230,7 +299,12 @@ function App() {
         }}
         onMouseDown={(ev) => {
           switch (ev.button) {
-            case 0: //Left
+            case 0 /** Left Click */:
+              /**
+               * In Modes Grab, Scale and Rotate,
+               * We're done with the transaction on left click,
+               * Finalize Changes
+               */
               if (
                 [
                   ViewportModes.grab,
@@ -242,9 +316,16 @@ function App() {
                 setmode(ViewportModes.navigate);
               }
               break;
-            case 1: //Middle
+
+            case 1 /** Middle Click */:
               break;
-            case 2: //Right
+
+            /**
+             * In Modes Grab, Scale and Rotate,
+             * We're wanna undo / cancel the transaction on right click,
+             * Finalize Changes and then Undo
+             */
+            case 2 /** Right Click */:
               if (
                 [
                   ViewportModes.grab,
@@ -260,15 +341,21 @@ function App() {
           }
         }}
         onWheel={(ev) => {
-          // Handle Scaling
+          /**
+           * Wheel / Scroll Logic is Implemented here
+           */
+
+          /**
+           * Handle Scaling
+           */
           if (
-            window.viewportMode === ViewportModes.scale && // Handle Scaling
+            window.viewportMode === ViewportModes.scale &&
             isSelectedType(...ViewportInteractionAllowed)
           ) {
             const scalingFactor =
               Math.sign(ev.deltaY) < 0
-                ? 0.1 /** scrollup */
-                : -0.1; /** scroll down */
+                ? 0.1 /** Scroll Up */
+                : -0.1; /** Scroll Down */
             const scalingVector = getVector3Component(
               new Vector3(scalingFactor, scalingFactor, scalingFactor),
               window.workingAxis
@@ -288,6 +375,6 @@ function App() {
       <div className={`${styles.sidePanel}`}></div>
     </div>
   );
-}
+};
 
 export default App;

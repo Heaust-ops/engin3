@@ -11,6 +11,32 @@ import {
 import { doForSelectedItems } from "./utils";
 import { isType } from "./validity";
 
+/**
+ * Every Action that causes any Change needs to be a Transaction.
+ *
+ * Succesful Transactions will be Recorded in Event History,
+ * Which will be used to properly,
+ * - Undo
+ * - Duplicate
+ * - Generate Code
+ *
+ * There are three primary methods of use here,
+ * - Start Transaction:
+ *    Will be used to record relevant data related to the
+ *    transaction and store it as a pending transaction.
+ *
+ * - Commit Transaction:
+ *    Saves the transaction to the Event History with all
+ *    the necessary information required to re-perform or
+ *    undo it.
+ *
+ * - Rollback Transaction: Undo latest,
+ *    Do not use when there are already transactions pending.
+ *    Won't work anyway in that case as added safety.
+ */
+
+/** ========================================= */
+
 export type AxesInfoArray = [number /** x */, number /** y */, number /** z */];
 export type InitialMeshInfo = {
   path: string;
@@ -56,11 +82,6 @@ export const removeMesh = (mesh: THREE.Object3D) => {
     });
   }
 };
-
-/**
- * window.pendingTransactionObjectID being set non null
- * signifies a transaction being carried out.
- */
 
 /**
  * Removes the currently selected mesh.

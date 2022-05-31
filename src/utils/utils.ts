@@ -3,6 +3,18 @@ import { WorkingAxes } from "../enums";
 import { MousePosition } from "../interfaces";
 import { NonSelectionTypes, TypesThatNeedHelpers } from "./constants";
 
+/**
+ * Misc Utilities,
+ * Helper Functions
+ * etc
+ */
+/** ================= */
+/** */
+
+/**
+ * Performs an action for all selected Items
+ * @param action Action to perform
+ */
 export const doForSelectedItems = (
   action: (selectedItem: THREE.Object3D) => void
 ) => {

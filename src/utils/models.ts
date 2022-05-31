@@ -9,6 +9,39 @@ import {
 import * as THREE from "three";
 import { commitTransaction, startTransaction } from "./transactions";
 
+/**
+ * This Page Keeps the Model Loaders,
+ * Every Model Loader Should have these Optional Parameters,
+ * Even if it does nothing with it.
+ *
+ * modelPath: string;
+ * Details of the Model to Load, specifically
+ * What model do you want to load?
+ *
+ * pos: [number, number, number];
+ * Initial Position of the model.
+ *
+ * rotation: [number, number, number];
+ * Initial Rotation of the model.
+ *
+ * size: number | [number, number, number];
+ * Initial Size / Scale of the model.
+ *
+ * preprocess: (arg: THREE.Mesh) => void;
+ * Before adding the model to scene,
+ * the option to do something with it.
+ *
+ * asTransaction: boolean;
+ * Should we record the transaction of the model being
+ * loaded, should be true by default
+ *
+ */
+
+/** ======================================================= */
+
+/**
+ * Model Loader For Primitives and Primitive Buffers
+ */
 export const loadPrimitive = ({
   modelPath,
   pos = [0, 0, 0],
@@ -129,6 +162,9 @@ export const loadPrimitive = ({
   }
 };
 
+/**
+ * Model Loader For GLTF / GLB
+ */
 export const loadGLTFModel = ({
   modelPath,
   pos = [0, 0, 0],
@@ -185,6 +221,9 @@ export const loadGLTFModel = ({
   }
 };
 
+/**
+ * Model Loader For FBX
+ */
 export const loadFBXModel = ({
   modelPath,
   pos = [0, 0, 0],
@@ -232,6 +271,9 @@ export const loadFBXModel = ({
   }
 };
 
+/**
+ * Model Loader For Lights
+ */
 export const loadLight = ({
   modelPath,
   pos = [0, 0, 0],
@@ -316,7 +358,7 @@ export const loadLight = ({
 };
 
 /**
- *
+ * Used to get a Specific Model Loader
  * @param loadMethod The Method of Loading
  * @returns The appropriate loader that uses the given method to load
  */

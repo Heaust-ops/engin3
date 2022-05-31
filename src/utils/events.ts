@@ -7,19 +7,18 @@ import {
 } from "./transactions";
 import { selectObject3D, unselectObject3D } from "./utils";
 
+/**
+ * Interfaces and Methods
+ * for Interacting with Event History
+ * go here
+ */
+
+/** ============================================ */
+/** */
 export interface ViewportEvent {
   type: ViewportEventType;
   info: ViewportEventAxesInfo | ViewportEventMeshInfo;
 }
-
-/**
- * We're storing both final and initial values,
- *
- * Initials will be helpful in undo.
- *
- * Finals will be helpful in achieving the final state in the least
- * number of steps
- */
 export interface ViewportEventAxesInfo {
   objectID: number;
   finalX: number;
