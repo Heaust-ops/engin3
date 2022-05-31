@@ -27,9 +27,16 @@
   background-color: #222;
 }
 
-.viewport {
+.viewportWrapper {
+  z-index: 0;
   grid-area: view;
   background-color: #222;
+}
+
+.viewport {
+  z-index: 1;
+  width: 100%;
+  height: 100%;
 }
 
 .sidePanel {

@@ -25,6 +25,7 @@ import {
 import { ViewportInteractionAllowed } from "./utils/constants";
 import { handleHotkeys } from "./utils/handleHotkeys";
 import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass";
+import TransformsMenu from "./components/TransformsMenu/TransformsMenu";
 
 /**
  * Heap Variables
@@ -88,6 +89,7 @@ const menus = {
 const App = () => {
   const [keyStack, setkeyStack] = useState([] as KeyboardEvent["key"][]);
   const [mode, setmode] = useState(ViewportModes.navigate);
+  const [selectedItemsCount, setselectedItemsCount] = useState(0);
 
   /**
    * Regulating Mode Changes & Implementing Mode Logic
@@ -274,102 +276,116 @@ const App = () => {
       {/* Header Menu */}
       <div className={`${styles.headerMenu}`}></div>
 
-      {/* Viewport */}
+      {/* Context Menu */}
       <ContextMenuWrapperDiv
-        onDrop={(ev) => {
+        style={{ position: "relative" }}
+        menus={menus}
+        className={`${styles.viewportWrapper}`}
+        keyStack={keyStack}
+      >
+        {
           /**
-           * If a Model is Dropped, Load it into the Scene,
-           * Works rn for:
-           * - FBX
-           * - GLTF
+           * This is the ThreeJs Viewport's Parent Div
            */
-          const model = ev.dataTransfer.items[0].getAsFile();
-          const modelURL = model ? URL.createObjectURL(model) : null;
-          if (modelURL) {
-            switch (model!.type) {
-              case "model/gltf-binary":
-                loadGLTFModel({ modelPath: modelURL });
-                break;
-              case "":
-                if (model!.name.endsWith(".fbx"))
-                  loadFBXModel({ modelPath: modelURL });
-                break;
+        }
+        <div
+          onClick={() => {
+            setselectedItemsCount(window.selectedItems.length);
+          }}
+          onDrop={(ev) => {
+            /**
+             * If a Model is Dropped, Load it into the Scene,
+             * Works rn for:
+             * - FBX
+             * - GLTF
+             */
+            const model = ev.dataTransfer.items[0].getAsFile();
+            const modelURL = model ? URL.createObjectURL(model) : null;
+            if (modelURL) {
+              switch (model!.type) {
+                case "model/gltf-binary":
+                  loadGLTFModel({ modelPath: modelURL });
+                  break;
+                case "":
+                  if (model!.name.endsWith(".fbx"))
+                    loadFBXModel({ modelPath: modelURL });
+                  break;
+              }
             }
-          }
-        }}
-        onMouseDown={(ev) => {
-          switch (ev.button) {
-            case 0 /** Left Click */:
+          }}
+          onMouseDown={(ev) => {
+            switch (ev.button) {
+              case 0 /** Left Click */:
+                /**
+                 * In Modes Grab, Scale and Rotate,
+                 * We're done with the transaction on left click,
+                 * Finalize Changes
+                 */
+                if (
+                  [
+                    ViewportModes.grab,
+                    ViewportModes.rotate,
+                    ViewportModes.scale,
+                  ].includes(mode)
+                ) {
+                  commitTransaction();
+                  setmode(ViewportModes.navigate);
+                }
+                break;
+
+              case 1 /** Middle Click */:
+                break;
+
               /**
                * In Modes Grab, Scale and Rotate,
-               * We're done with the transaction on left click,
-               * Finalize Changes
+               * We're wanna undo / cancel the transaction on right click,
+               * Finalize Changes and then Undo
                */
-              if (
-                [
-                  ViewportModes.grab,
-                  ViewportModes.rotate,
-                  ViewportModes.scale,
-                ].includes(mode)
-              ) {
-                commitTransaction();
-                setmode(ViewportModes.navigate);
-              }
-              break;
-
-            case 1 /** Middle Click */:
-              break;
+              case 2 /** Right Click */:
+                if (
+                  [
+                    ViewportModes.grab,
+                    ViewportModes.rotate,
+                    ViewportModes.scale,
+                  ].includes(mode)
+                ) {
+                  commitTransaction();
+                  rollbackTransaction();
+                  setmode(ViewportModes.navigate);
+                }
+                break;
+            }
+          }}
+          onWheel={(ev) => {
+            /**
+             * Wheel / Scroll Logic is Implemented here
+             */
 
             /**
-             * In Modes Grab, Scale and Rotate,
-             * We're wanna undo / cancel the transaction on right click,
-             * Finalize Changes and then Undo
+             * Handle Scaling
              */
-            case 2 /** Right Click */:
-              if (
-                [
-                  ViewportModes.grab,
-                  ViewportModes.rotate,
-                  ViewportModes.scale,
-                ].includes(mode)
-              ) {
-                commitTransaction();
-                rollbackTransaction();
-                setmode(ViewportModes.navigate);
-              }
-              break;
-          }
-        }}
-        onWheel={(ev) => {
-          /**
-           * Wheel / Scroll Logic is Implemented here
-           */
+            if (
+              window.viewportMode === ViewportModes.scale &&
+              isSelectedType(...ViewportInteractionAllowed)
+            ) {
+              const scalingFactor =
+                Math.sign(ev.deltaY) < 0
+                  ? 0.1 /** Scroll Up */
+                  : -0.1; /** Scroll Down */
+              const scalingVector = getVector3Component(
+                new Vector3(scalingFactor, scalingFactor, scalingFactor),
+                window.workingAxis
+              );
 
-          /**
-           * Handle Scaling
-           */
-          if (
-            window.viewportMode === ViewportModes.scale &&
-            isSelectedType(...ViewportInteractionAllowed)
-          ) {
-            const scalingFactor =
-              Math.sign(ev.deltaY) < 0
-                ? 0.1 /** Scroll Up */
-                : -0.1; /** Scroll Down */
-            const scalingVector = getVector3Component(
-              new Vector3(scalingFactor, scalingFactor, scalingFactor),
-              window.workingAxis
-            );
-
-            doForSelectedItems((x) => {
-              (x as THREE.Mesh).scale.add(scalingVector);
-            });
-          }
-        }}
-        menus={menus}
-        className={`${styles.viewport} viewport`}
-        keyStack={keyStack}
-      />
+              doForSelectedItems((x) => {
+                (x as THREE.Mesh).scale.add(scalingVector);
+              });
+            }
+          }}
+          className={`${styles.viewport} viewport`}
+        />
+        {selectedItemsCount === 1 && <TransformsMenu />}
+      </ContextMenuWrapperDiv>
 
       {/* SidePanel */}
       <div className={`${styles.sidePanel}`}></div>

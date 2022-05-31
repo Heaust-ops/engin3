@@ -74,14 +74,18 @@ export const viewportInit = (targetClass = "viewport") => {
     // Setting up RayCaster
     let rc = new THREE.Raycaster();
 
-    (target[0] as HTMLDivElement).onmousemove = (e) => {
+    renderer.domElement.onmousemove = (e) => {
       window.ndcMousePosition = {
         x:
-          ((e.pageX - (target[0] as HTMLDivElement).offsetLeft) / Cwidth()) *
+          ((e.pageX - renderer.domElement.getBoundingClientRect().left) /
+            Cwidth()) *
             2 -
           1,
         y:
-          -((e.pageY - (target[0] as HTMLDivElement).offsetTop) / Cheight()) *
+          -(
+            (e.pageY - renderer.domElement.getBoundingClientRect().top) /
+            Cheight()
+          ) *
             2 +
           1,
       };
@@ -150,7 +154,7 @@ export const viewportInit = (targetClass = "viewport") => {
     window.outlinePass.edgeGlow = 0;
     composer.addPass(window.outlinePass);
 
-    (target[0] as HTMLDivElement).onclick = (ev) => {
+    renderer.domElement.onclick = (ev) => {
       if (ev.button === 0 && window.viewportMode === ViewportModes.navigate) {
         // Only Select on Left Click and on Navigation mode
         CheckRC(
