@@ -204,7 +204,7 @@ export const commitTransaction = () => {
         break;
 
       case ViewportEventType.delete:
-        if ((pendingTransaction.initials as InitialMeshInfo).path)
+        if ((pendingTransaction.initials as InitialMeshInfo)?.path)
           info = {
             objectID: pendingTransaction.objectID,
             ...(pendingTransaction.initials as InitialMeshInfo),

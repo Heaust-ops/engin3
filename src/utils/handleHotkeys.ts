@@ -114,6 +114,7 @@ export const handleHotkeys = (
       break;
     // clone
     case "shiftd":
+      if (window.pendingTransactions.length) commitTransaction();
       if (isSelectedType(...ViewportInteractionAllowed)) {
         doForSelectedItems((x) => {
           const ve = getLatestVE(

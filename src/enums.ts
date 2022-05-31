@@ -43,8 +43,8 @@ export enum Primitives {
 }
 
 export enum Lights {
-  directional = "PointLight",
-  hemispehre = "DirectionalLight",
-  point = "HemisphereLight",
+  directional = "DirectionalLight",
+  hemispehre = "HemisphereLight",
+  point = "PointLight",
   spot = "SpotLight",
 }

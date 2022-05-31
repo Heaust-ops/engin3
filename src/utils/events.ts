@@ -1,6 +1,11 @@
 import { MeshLoadMethod, ViewportEventType } from "../enums";
 import { getLoader } from "./models";
-import { removeMesh } from "./transactions";
+import {
+  commitTransaction,
+  removeMesh,
+  startTransaction,
+} from "./transactions";
+import { selectObject3D, unselectObject3D } from "./utils";
 
 export interface ViewportEvent {
   type: ViewportEventType;
@@ -205,11 +210,21 @@ export const reloadFromVE = (
   loader({
     modelPath: info.path,
     preprocess: (mesh) => {
-      if (scale) mesh.scale.set(scale.finalX, scale.finalY, scale.finalZ);
-      if (position)
+      selectObject3D(mesh);
+      if (scale) {
+        startTransaction(ViewportEventType.scale);
+        mesh.scale.set(scale.finalX, scale.finalY, scale.finalZ);
+      }
+      if (position) {
+        startTransaction(ViewportEventType.grab);
         mesh.position.set(position.finalX, position.finalY, position.finalZ);
-      if (rotation)
+      }
+      if (rotation) {
+        startTransaction(ViewportEventType.rotate);
         mesh.rotation.set(rotation.finalX, rotation.finalY, rotation.finalZ);
+      }
+      commitTransaction();
+      unselectObject3D(mesh);
 
       // Replace previous object's Ids with the new one's throughout all
       // so that further undo doesn't break when reviving
