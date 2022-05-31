@@ -77,13 +77,15 @@ export const viewportInit = (targetClass = "viewport") => {
     renderer.domElement.onmousemove = (e) => {
       window.ndcMousePosition = {
         x:
-          ((e.pageX - renderer.domElement.getBoundingClientRect().left) /
+          ((window.mousePosition.x -
+            renderer.domElement.getBoundingClientRect().left) /
             Cwidth()) *
             2 -
           1,
         y:
           -(
-            (e.pageY - renderer.domElement.getBoundingClientRect().top) /
+            (window.mousePosition.y -
+              renderer.domElement.getBoundingClientRect().top) /
             Cheight()
           ) *
             2 +

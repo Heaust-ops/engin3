@@ -10,7 +10,6 @@ import {
 import { doForSelectedItems } from "./utils";
 import { isSelectedType } from "./validity";
 
-
 /**
  * The Function that handles hotkeys.
  * @param hotkeyStack The stack that contains currently pressed keys
@@ -24,7 +23,7 @@ export const handleHotkeys = (
    * Reset All the Values we only want
    * working on Hold.
    */
-  if (window.multiselect) window.multiselect = false; 
+  if (window.multiselect) window.multiselect = false;
 
   /**
    * Handle Keys
@@ -159,6 +158,7 @@ export const handleHotkeys = (
      *
      */
     case "g":
+      if (!window.selectedItems.length) break;
       if (isSelectedType(...ViewportInteractionAllowed))
         window.viewportMode === ViewportModes.grab
           ? setmode(ViewportModes.navigate)
@@ -170,6 +170,7 @@ export const handleHotkeys = (
      *
      */
     case "r":
+      if (!window.selectedItems.length) break;
       if (isSelectedType(...ViewportInteractionAllowed))
         window.viewportMode === ViewportModes.rotate
           ? setmode(ViewportModes.navigate)
@@ -181,6 +182,7 @@ export const handleHotkeys = (
      *
      */
     case "s":
+      if (!window.selectedItems.length) break;
       if (isSelectedType(...ViewportInteractionAllowed))
         window.viewportMode === ViewportModes.scale
           ? setmode(ViewportModes.navigate)
@@ -191,6 +193,7 @@ export const handleHotkeys = (
      * Shift + D: Duplicates Selected
      */
     case "shiftd":
+      if (!window.selectedItems.length) break;
       if (window.pendingTransactions.length) commitTransaction();
       if (isSelectedType(...ViewportInteractionAllowed)) {
         doForSelectedItems((x) => {

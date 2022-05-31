@@ -60,8 +60,27 @@ window.viewportEventHistory = [];
  * @param mouseMoveEvent Mouse Move Event
  */
 const keepTrackOfCursor = (mouseMoveEvent: MouseEvent) => {
-  window.mousePosition.x = mouseMoveEvent.pageX;
-  window.mousePosition.y = mouseMoveEvent.pageY;
+  if (document.pointerLockElement) {
+    const RADIUS = 20;
+    const canvas = document.getElementById("three-canvas") as HTMLCanvasElement;
+    window.mousePosition.x += mouseMoveEvent.movementX;
+    window.mousePosition.y += mouseMoveEvent.movementY;
+    if (window.mousePosition.x > canvas.width + RADIUS) {
+      window.mousePosition.x = -RADIUS;
+    }
+    if (window.mousePosition.y > canvas.height + RADIUS) {
+      window.mousePosition.y = -RADIUS;
+    }
+    if (window.mousePosition.x < -RADIUS) {
+      window.mousePosition.x = canvas.width + RADIUS;
+    }
+    if (window.mousePosition.y < -RADIUS) {
+      window.mousePosition.y = canvas.height + RADIUS;
+    }
+  } else {
+    window.mousePosition.x = mouseMoveEvent.pageX;
+    window.mousePosition.y = mouseMoveEvent.pageY;
+  }
 };
 
 /**
@@ -112,6 +131,7 @@ const App = () => {
      */
     if (mode === ViewportModes.navigate) {
       window.workingAxis = WorkingAxes.all;
+      document.exitPointerLock();
     }
 
     /**
@@ -122,8 +142,10 @@ const App = () => {
         mode
       ) &&
       !window.pendingTransactions.length
-    )
+    ) {
+      document.getElementById("three-canvas")?.requestPointerLock();
       startTransaction(mode as unknown as ViewportEventType);
+    }
 
     /**
      * Grab and Rotate Logic
@@ -283,11 +305,9 @@ const App = () => {
         className={`${styles.viewportWrapper}`}
         keyStack={keyStack}
       >
-        {
-          /**
-           * This is the ThreeJs Viewport's Parent Div
-           */
-        }
+        {/**
+         * This is the ThreeJs Viewport's Parent Div
+         */}
         <div
           onClick={() => {
             setselectedItemsCount(window.selectedItems.length);
