@@ -74,7 +74,7 @@ export const viewportInit = (targetClass = "viewport") => {
     // Setting up RayCaster
     let rc = new THREE.Raycaster();
 
-    renderer.domElement.onmousemove = (e) => {
+    renderer.domElement.onmousemove = () => {
       window.ndcMousePosition = {
         x:
           ((window.mousePosition.x -

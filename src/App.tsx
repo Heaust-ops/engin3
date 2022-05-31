@@ -61,6 +61,9 @@ window.viewportEventHistory = [];
  */
 const keepTrackOfCursor = (mouseMoveEvent: MouseEvent) => {
   if (document.pointerLockElement) {
+    /**
+     * If the pointer is locked, update by using movement.
+     */
     const RADIUS = 20;
     const canvas = document.getElementById("three-canvas") as HTMLCanvasElement;
     window.mousePosition.x += mouseMoveEvent.movementX;
@@ -78,6 +81,9 @@ const keepTrackOfCursor = (mouseMoveEvent: MouseEvent) => {
       window.mousePosition.y = canvas.height + RADIUS;
     }
   } else {
+    /**
+     * Update Normally
+     */
     window.mousePosition.x = mouseMoveEvent.pageX;
     window.mousePosition.y = mouseMoveEvent.pageY;
   }
@@ -135,6 +141,8 @@ const App = () => {
     }
 
     /**
+     * Lock the Pointer
+     * and
      * Start Tranformation Transaction
      */
     if (
