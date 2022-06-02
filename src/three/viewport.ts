@@ -156,7 +156,7 @@ export const viewportInit = (targetClass = "viewport") => {
     window.outlinePass.edgeGlow = 0;
     composer.addPass(window.outlinePass);
 
-    renderer.domElement.onclick = (ev) => {
+    renderer.domElement.onmousedown = (ev) => {
       if (ev.button === 0 && window.viewportMode === ViewportModes.navigate) {
         // Only Select on Left Click and on Navigation mode
         CheckRC(

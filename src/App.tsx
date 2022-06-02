@@ -23,7 +23,7 @@ import {
   getVector3Component,
 } from "./utils/utils";
 import { ViewportInteractionAllowed } from "./utils/constants";
-import { handleHotkeys } from "./utils/handleHotkeys";
+import { handleHotkeys } from "./utils/viewportHotkeys";
 import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass";
 import TransformsMenu from "./components/TransformsMenu/TransformsMenu";
 
@@ -40,6 +40,7 @@ declare global {
     workingAxis: WorkingAxes;
     controls: OrbitControls;
     defaultMaterial: Material;
+    materials: Material[];
     viewportCamera: THREE.PerspectiveCamera;
     viewportEventHistory: ViewportEvent[];
     outlinePass: OutlinePass;
@@ -64,21 +65,21 @@ const keepTrackOfCursor = (mouseMoveEvent: MouseEvent) => {
     /**
      * If the pointer is locked, update by using movement.
      */
-    const RADIUS = 20;
-    const canvas = document.getElementById("three-canvas") as HTMLCanvasElement;
+    const radius = 20;
+    const {width, height} = document.getElementById("three-canvas") as HTMLCanvasElement;
     window.mousePosition.x += mouseMoveEvent.movementX;
     window.mousePosition.y += mouseMoveEvent.movementY;
-    if (window.mousePosition.x > canvas.width + RADIUS) {
-      window.mousePosition.x = -RADIUS;
+    if (window.mousePosition.x > width + radius) {
+      window.mousePosition.x = -radius;
     }
-    if (window.mousePosition.y > canvas.height + RADIUS) {
-      window.mousePosition.y = -RADIUS;
+    if (window.mousePosition.y > height + radius) {
+      window.mousePosition.y = -radius;
     }
-    if (window.mousePosition.x < -RADIUS) {
-      window.mousePosition.x = canvas.width + RADIUS;
+    if (window.mousePosition.x < -radius) {
+      window.mousePosition.x = width + radius;
     }
-    if (window.mousePosition.y < -RADIUS) {
-      window.mousePosition.y = canvas.height + RADIUS;
+    if (window.mousePosition.y < -radius) {
+      window.mousePosition.y = height + radius;
     }
   } else {
     /**

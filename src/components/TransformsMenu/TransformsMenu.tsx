@@ -1,6 +1,7 @@
 import { FunctionComponent, useState } from "react";
 import styles from "./TransformsMenu.module.css";
 import ArrowRightIcon from "@material-ui/icons/ArrowRight";
+import NumericSliderInput from "../NumericSliderInput/NumericSliderInput";
 
 interface TransformsMenuProps {}
 
@@ -25,7 +26,20 @@ const TransformsMenu: FunctionComponent<TransformsMenuProps> = () => {
       <div
         style={{ width: `${isHidden ? 0 : 20}rem` }}
         className={`${styles.MenuBox}`}
-      ></div>
+      >
+        <NumericSliderInput
+          style={{ width: `${isHidden ? 0 : 20}rem` }}
+          setter={(arg) => {
+            const selectedItem = window.selectedItems[0];
+            if (selectedItem) selectedItem.position.x = arg;
+          }}
+          getter={() => {
+            const selectedItem = window.selectedItems[0];
+            if (selectedItem) return selectedItem.position.x;
+            return 0;
+          }}
+        />
+      </div>
     </div>
   );
 };
