@@ -5,7 +5,7 @@ import {
   removeMesh,
   startTransaction,
 } from "./transactions";
-import { selectObject3D, unselectObject3D } from "./utils";
+import { selectObject3D, unselectObject3D } from "./selection";
 
 /**
  * Interfaces and Methods

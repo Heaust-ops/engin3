@@ -38,6 +38,7 @@ const TransformsMenu: FunctionComponent<TransformsMenuProps> = () => {
             if (selectedItem) return selectedItem.position.x;
             return 0;
           }}
+          toUpdate={!isHidden}
         />
       </div>
     </div>

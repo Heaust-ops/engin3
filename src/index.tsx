@@ -3,6 +3,42 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { Material } from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass';
+import { ViewportModes, WorkingAxes } from './enums';
+import { MousePosition } from './interfaces';
+import { ViewportEvent } from './utils/events';
+import { PendingTransaction } from './utils/transactions';
+
+/**
+ * Heap Variables
+ */
+ declare global {
+  interface Window {
+    scene: THREE.Scene;
+    selectedItems: THREE.Object3D[];
+    mousePosition: MousePosition;
+    ndcMousePosition: MousePosition;
+    viewportMode: ViewportModes;
+    workingAxis: WorkingAxes;
+    controls: OrbitControls;
+    defaultMaterial: Material;
+    materials: Material[];
+    viewportCamera: THREE.PerspectiveCamera;
+    viewportEventHistory: ViewportEvent[];
+    outlinePass: OutlinePass;
+    pendingTransactions: PendingTransaction[];
+    multiselect: boolean;
+  }
+}
+
+window.pendingTransactions = [];
+window.mousePosition = { x: -1, y: -1 };
+window.ndcMousePosition = { x: -1, y: -1 };
+window.workingAxis = WorkingAxes.all;
+window.viewportMode = ViewportModes.navigate;
+window.viewportEventHistory = [];
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement

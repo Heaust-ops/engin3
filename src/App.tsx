@@ -4,91 +4,25 @@ import styles from "./App.module.css";
 import { useEffect, useState } from "react";
 import { viewportInit } from "./three/viewport";
 import { viewportAddMenu } from "./contextMenus/viewportAdd/viewportAdd";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { ViewportEventType, ViewportModes, WorkingAxes } from "./enums";
-import { MousePosition } from "./interfaces";
-import { Material, Vector3 } from "three";
 import { isSelectedType } from "./utils/validity";
 import {
   commitTransaction,
-  PendingTransaction,
   rollbackTransaction,
   startTransaction,
 } from "./utils/transactions";
 import { loadFBXModel, loadGLTFModel } from "./utils/models";
-import { ViewportEvent } from "./utils/events";
 import {
   doForSelectedItems,
   getMousePositionIn3D,
   getVector3Component,
+  keepTrackOfCursor,
 } from "./utils/utils";
 import { ViewportInteractionAllowed } from "./utils/constants";
 import { handleHotkeys } from "./utils/viewportHotkeys";
-import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass";
 import TransformsMenu from "./components/TransformsMenu/TransformsMenu";
-
-/**
- * Heap Variables
- */
-declare global {
-  interface Window {
-    scene: THREE.Scene;
-    selectedItems: THREE.Object3D[];
-    mousePosition: MousePosition;
-    ndcMousePosition: MousePosition;
-    viewportMode: ViewportModes;
-    workingAxis: WorkingAxes;
-    controls: OrbitControls;
-    defaultMaterial: Material;
-    materials: Material[];
-    viewportCamera: THREE.PerspectiveCamera;
-    viewportEventHistory: ViewportEvent[];
-    outlinePass: OutlinePass;
-    pendingTransactions: PendingTransaction[];
-    multiselect: boolean;
-  }
-}
-
-window.pendingTransactions = [];
-window.mousePosition = { x: -1, y: -1 };
-window.ndcMousePosition = { x: -1, y: -1 };
-window.workingAxis = WorkingAxes.all;
-window.viewportMode = ViewportModes.navigate;
-window.viewportEventHistory = [];
-
-/**
- * Keeps the Mouse Position on heap fresh.
- * @param mouseMoveEvent Mouse Move Event
- */
-const keepTrackOfCursor = (mouseMoveEvent: MouseEvent) => {
-  if (document.pointerLockElement) {
-    /**
-     * If the pointer is locked, update by using movement.
-     */
-    const radius = 20;
-    const {width, height} = document.getElementById("three-canvas") as HTMLCanvasElement;
-    window.mousePosition.x += mouseMoveEvent.movementX;
-    window.mousePosition.y += mouseMoveEvent.movementY;
-    if (window.mousePosition.x > width + radius) {
-      window.mousePosition.x = -radius;
-    }
-    if (window.mousePosition.y > height + radius) {
-      window.mousePosition.y = -radius;
-    }
-    if (window.mousePosition.x < -radius) {
-      window.mousePosition.x = width + radius;
-    }
-    if (window.mousePosition.y < -radius) {
-      window.mousePosition.y = height + radius;
-    }
-  } else {
-    /**
-     * Update Normally
-     */
-    window.mousePosition.x = mouseMoveEvent.pageX;
-    window.mousePosition.y = mouseMoveEvent.pageY;
-  }
-};
+import { Vector3 } from "three";
+import { grab, rotate } from "./utils/transforms";
 
 /**
  * Because Writing (ev) => ev.preventDefault();
@@ -174,52 +108,12 @@ const App = () => {
           /**
            * Handle Grab
            */
-          if (mode === ViewportModes.grab) {
-            const translateComponent = getVector3Component(
-              delta,
-              window.workingAxis
-            );
-            const shift = translateComponent.multiplyScalar(
-              Math.pow(currentPos.lengthSq(), 1 / 4)
-            );
-
-            /**
-             * Do Discrete Steps if Shift is held
-             */
-            if (keyStack.join("") === "shift") {
-              shift.normalize().multiplyScalar(0.51);
-              shift.set(
-                Math.round(shift.x) * 2,
-                Math.round(shift.y) * 2,
-                Math.round(shift.z) * 2
-              );
-            }
-
-            doForSelectedItems((x) => {
-              x.position.add(shift);
-            });
-          }
+          if (mode === ViewportModes.grab) grab(delta, currentPos, keyStack);
 
           /**
            * Handle Rotation
            */
-          if (mode === ViewportModes.rotate) {
-            const componentVector = getVector3Component(
-              new Vector3(1, 1, 1),
-              window.workingAxis
-            );
-            const angularVector = delta.cross(currentPos).normalize();
-            const angularComp = -Math.abs(angularVector.dot(componentVector));
-            const axis = new Vector3(
-              delta.x * componentVector.x,
-              delta.y * componentVector.y,
-              delta.z * componentVector.z
-            );
-
-            doForSelectedItems((x) => {
-              x.rotateOnWorldAxis(axis.normalize(), angularComp / 7.5);
-            });
-          }
+          if (mode === ViewportModes.rotate) rotate(delta, currentPos);
         }
         prevPos = currentPos;
       }, 10);
@@ -389,26 +283,44 @@ const App = () => {
             /**
              * Wheel / Scroll Logic is Implemented here
              */
+            const direction =
+              Math.sign(ev.deltaY) < 0
+                ? 1 /** Scroll Up */
+                : -1; /** Scroll Down */
 
-            /**
-             * Handle Scaling
-             */
-            if (
-              window.viewportMode === ViewportModes.scale &&
-              isSelectedType(...ViewportInteractionAllowed)
-            ) {
-              const scalingFactor =
-                Math.sign(ev.deltaY) < 0
-                  ? 0.1 /** Scroll Up */
-                  : -0.1; /** Scroll Down */
-              const scalingVector = getVector3Component(
-                new Vector3(scalingFactor, scalingFactor, scalingFactor),
-                window.workingAxis
-              );
+            switch (mode) {
+              case ViewportModes.grab:
+                if (
+                  ![WorkingAxes.x, WorkingAxes.y, WorkingAxes.z].includes(
+                    window.workingAxis
+                  )
+                )
+                  break; // Gaurd
 
-              doForSelectedItems((x) => {
-                (x as THREE.Mesh).scale.add(scalingVector);
-              });
+                grab([direction, direction, direction], 1);
+                break;
+              case ViewportModes.rotate:
+                if (
+                  ![WorkingAxes.x, WorkingAxes.y, WorkingAxes.z].includes(
+                    window.workingAxis
+                  )
+                )
+                  break; // Gaurd
+
+                rotate([direction, direction, direction], 1);
+                break;
+              case ViewportModes.scale:
+                if (!isSelectedType(...ViewportInteractionAllowed)) break; // Gaurd
+                const scalingFactor = direction / 10;
+                const scalingVector = getVector3Component(
+                  new Vector3(scalingFactor, scalingFactor, scalingFactor),
+                  window.workingAxis
+                );
+
+                doForSelectedItems((x) => {
+                  (x as THREE.Mesh).scale.add(scalingVector);
+                });
+                break;
             }
           }}
           className={`${styles.viewport} viewport`}

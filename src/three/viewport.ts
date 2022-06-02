@@ -6,9 +6,8 @@ import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass.js";
 import { ViewportModes } from "../enums";
 import {
   doForSelectedItems,
-  selectObject3D,
-  unselectObject3D,
 } from "../utils/utils";
+import { selectObject3D, unselectObject3D } from "../utils/selection";
 
 var scene = new THREE.Scene();
 

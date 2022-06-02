@@ -1,7 +1,6 @@
 import { Vector3 } from "three";
 import { WorkingAxes } from "../enums";
 import { MousePosition } from "../interfaces";
-import { NonSelectionTypes, TypesThatNeedHelpers } from "./constants";
 
 /**
  * Misc Utilities,
@@ -22,6 +21,42 @@ export const doForSelectedItems = (
 };
 
 /**
+ * Keeps the Mouse Position on heap fresh.
+ * @param mouseMoveEvent Mouse Move Event
+ */
+export const keepTrackOfCursor = (mouseMoveEvent: MouseEvent) => {
+  if (document.pointerLockElement) {
+    /**
+     * If the pointer is locked, update by using movement.
+     */
+    const radius = 20;
+    const { width, height } = document.getElementById(
+      "three-canvas"
+    ) as HTMLCanvasElement;
+    window.mousePosition.x += mouseMoveEvent.movementX;
+    window.mousePosition.y += mouseMoveEvent.movementY;
+    if (window.mousePosition.x > width + radius) {
+      window.mousePosition.x = -radius;
+    }
+    if (window.mousePosition.y > height + radius) {
+      window.mousePosition.y = -radius;
+    }
+    if (window.mousePosition.x < -radius) {
+      window.mousePosition.x = width + radius;
+    }
+    if (window.mousePosition.y < -radius) {
+      window.mousePosition.y = height + radius;
+    }
+  } else {
+    /**
+     * Update Normally
+     */
+    window.mousePosition.x = mouseMoveEvent.pageX;
+    window.mousePosition.y = mouseMoveEvent.pageY;
+  }
+};
+
+/**
  * Returns ther helper of an object given the object itself
  * @param arg the object whose helper we want
  * @returns The helper of the object if it has one
@@ -39,73 +74,6 @@ export const getHelper = (arg: THREE.Object3D) => {
   }
 
   return helper;
-};
-
-/**
- * Highlights passed objects
- * @param args The 3D Objects to highlight
- */
-export const highlightObjects = (args: THREE.Object3D[]) => {
-  window.outlinePass.selectedObjects = args;
-};
-
-/**
- * Selects 3D Object(s) programmatically
- * @param arg The 3D Object to Select
- */
-export const selectObject3D = (
-  arg: THREE.Object3D | THREE.Object3D[] | null,
-  strict = false
-) => {
-  if (
-    arg === null ||
-    (arg instanceof Array && arg.length === 0) ||
-    ((arg as THREE.Object3D).type &&
-      NonSelectionTypes.includes((arg as THREE.Object3D).type))
-  ) {
-    if (strict) {
-      window.selectedItems = [];
-      window.outlinePass.selectedObjects = [];
-    }
-    return;
-  }
-
-  if (!(arg instanceof Array)) arg = [arg];
-
-  arg.forEach((item) => {
-    if (TypesThatNeedHelpers.includes(item.type)) {
-      const helper = getHelper(item);
-      if (helper) arg = (arg as THREE.Object3D[]).concat(helper);
-    }
-  });
-
-  if (strict) {
-    window.selectedItems = arg;
-    window.outlinePass.selectedObjects = arg;
-  } else {
-    window.selectedItems = window.selectedItems.concat(arg);
-    window.outlinePass.selectedObjects =
-      window.outlinePass.selectedObjects.concat(arg);
-  }
-};
-
-/**
- * UnSelects 3D Object(s) programmatically
- * @param arg The 3D Object to Select
- */
-export const unselectObject3D = (args: THREE.Object3D[] | THREE.Object3D) => {
-  if (!(args instanceof Array)) args = [args];
-  args.forEach((arg) => {
-    if (!window.selectedItems) return;
-    const findIndex0 = window.selectedItems.findIndex((a) => a.id === arg.id);
-    findIndex0 !== -1 && window.selectedItems.splice(findIndex0, 1);
-
-    const findIndex1 = window.outlinePass.selectedObjects.findIndex(
-      (a) => a.id === arg.id
-    );
-    findIndex1 !== -1 &&
-      window.outlinePass.selectedObjects.splice(findIndex1, 1);
-  });
 };
 
 /**
