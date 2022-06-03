@@ -130,7 +130,7 @@ export const startTransaction = (type: ViewportEventType) => {
          
         break;*/
 
-      case ViewportEventType.delete:
+      case ViewportEventType.deleteMesh:
         const ve = getLatestVE(
           ViewportEventType.loadMesh,
           null,
@@ -224,7 +224,7 @@ export const commitTransaction = () => {
           };
         break;
 
-      case ViewportEventType.delete:
+      case ViewportEventType.deleteMesh:
         if ((pendingTransaction.initials as InitialMeshInfo)?.path)
           info = {
             objectID: pendingTransaction.objectID,

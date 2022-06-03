@@ -55,7 +55,7 @@ export const handleHotkeys = (
         /**
          * Delete
          */
-        startTransaction(ViewportEventType.delete);
+        startTransaction(ViewportEventType.deleteMesh);
         removeSelectedMesh();
         commitTransaction();
       } else if (

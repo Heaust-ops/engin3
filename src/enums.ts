@@ -24,11 +24,13 @@ export enum MeshLoadMethod {
 }
 
 export enum ViewportEventType {
-  loadMesh = "loadMesh",
   scale = "scale",
   grab = "grab",
   rotate = "rotate",
-  delete = "delete",
+  loadMesh = "loadMesh",
+  deleteMesh = "deleteMesh",
+  setDriver = "setDriver",
+  deleteDriver = "deleteDriver",
 }
 
 export enum Primitives {
@@ -47,4 +49,9 @@ export enum Lights {
   hemispehre = "HemisphereLight",
   point = "PointLight",
   spot = "SpotLight",
+}
+
+export enum DriverType {
+  numeric = "numeric",
+  string = "string",
 }

@@ -28,7 +28,11 @@ const TransformsMenu: FunctionComponent<TransformsMenuProps> = () => {
         className={`${styles.MenuBox}`}
       >
         <NumericSliderInput
-          style={{ width: `${isHidden ? 0 : 20}rem` }}
+          style={{
+            ...(isHidden
+              ? { width: 0, pointerEvents: "none", opacity: 0 }
+              : { width: "20rem" }),
+          }}
           setter={(arg) => {
             const selectedItem = window.selectedItems[0];
             if (selectedItem) selectedItem.position.x = arg;

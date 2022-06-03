@@ -227,7 +227,7 @@ export const reloadFromVE = (
 
       // Replace previous object's Ids with the new one's throughout all
       // so that further undo doesn't break when reviving
-      if ((ve as ViewportEvent).type === ViewportEventType.delete) {
+      if ((ve as ViewportEvent).type === ViewportEventType.deleteMesh) {
         for (let i = 0; i < window.viewportEventHistory.length; i++)
           if (window.viewportEventHistory[i].info.objectID === info.objectID)
             window.viewportEventHistory[i].info.objectID = mesh.id;
@@ -295,7 +295,7 @@ export const reverseVE = (ve: ViewportEvent | number) => {
       return true;
     }
 
-    case ViewportEventType.delete:
+    case ViewportEventType.deleteMesh:
       return reloadFromVE(ve);
   }
 };

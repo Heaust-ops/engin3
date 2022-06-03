@@ -4,10 +4,9 @@ import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass.js";
 import { ViewportModes } from "../enums";
-import {
-  doForSelectedItems,
-} from "../utils/utils";
+import { doForSelectedItems } from "../utils/utils";
 import { selectObject3D, unselectObject3D } from "../utils/selection";
+import { performAnimationStep } from "../utils/animations";
 
 var scene = new THREE.Scene();
 
@@ -209,12 +208,19 @@ export const viewportInit = (targetClass = "viewport") => {
 
     // Play Animation
     const RAF = () => {
-      requestAnimationFrame(() => {
-        // Animations
-
+      requestAnimationFrame((timeElapsed) => {
         // Recursively Render
         composer.render();
         RAF();
+
+        // Animations
+        if (!window.previousRAF) {
+          window.previousRAF = timeElapsed;
+        }
+
+        performAnimationStep(timeElapsed);
+
+        window.previousRAF = timeElapsed;
       });
     };
 
