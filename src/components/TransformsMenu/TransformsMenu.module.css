@@ -26,3 +26,52 @@
   transition: 0.3s;
   background-color: rgba(0, 0, 0, 1);
 }
+
+.MenuBox h3 {
+  margin: 0.4rem;
+  padding: 0;
+}
+
+.submenuWrapper {
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  margin-left: 0.7rem;
+}
+
+.submenuButton {
+  transition: 0.1s;
+  color: #ccc;
+  background-color: #1e1e1e;
+  font-size: 1.2rem;
+  letter-spacing: 0.1rem;
+  padding: 0.8rem;
+  cursor: pointer;
+  vertical-align: center;
+  outline: none;
+  border: none;
+}
+
+.position {
+  border-top-left-radius: 0.3rem;
+  border-bottom-left-radius: 0.3rem;
+  border-right: 2px solid #2e2e2e;
+}
+
+.scale {
+  border-top-right-radius: 0.3rem;
+  border-bottom-right-radius: 0.3rem;
+  border-left: 2px solid #2e2e2e;
+}
+
+.submenuButton.active {
+  color: #ccc;
+  background-color: #ccc;
+  border-radius: 0.3rem;
+  padding: 0.7rem;
+  cursor: pointer;
+  vertical-align: center;
+  outline: none;
+  border: none;
+}

@@ -1,5 +1,6 @@
 import { FunctionComponent, HTMLAttributes, useEffect, useState } from "react";
 import styles from "./NumericSliderInput.module.css";
+import ArrowRightIcon from "@material-ui/icons/ArrowRight";
 
 interface NumericSliderInputProps extends HTMLAttributes<HTMLDivElement> {
   getter: () => number;
@@ -38,30 +39,69 @@ const NumericSliderInput: FunctionComponent<NumericSliderInputProps> = ({
   }, [getter, isDriven, value]);
 
   return (
-    <input
-      {...props}
-      value={value}
-      className={`${styles.input}`}
-      onChange={(ev) => {
-        const targetValue = ev.target.value;
-        setvalue(targetValue);
+    <div {...props} className={`${styles.wrapper}`}>
+      {/**
+       * Decrease
+       */}
+      <button
+        className={`${styles.button}`}
+        onClick={() => {
+          if (!isDriven) setter(getter() - 0.5);
+        }}
+      >
+        <ArrowRightIcon
+          style={{
+            width: "1.8rem",
+            height: "1.8rem",
+            transform: "rotate(180deg)",
+          }}
+        />
+      </button>
 
-        if (isDriven) {
-          if (!targetValue.startsWith("$")) {
-            setisDriven(false);
-            return;
+      {/**
+       * Change
+       */}
+      <input
+        value={value}
+        className={`${styles.input}`}
+        onChange={(ev) => {
+          const targetValue = ev.target.value;
+          setvalue(targetValue);
+
+          if (isDriven) {
+            if (!targetValue.startsWith("$")) {
+              setisDriven(false);
+              return;
+            }
+          } else {
+            if (targetValue.includes("$")) {
+              setisDriven(true);
+              setvalue("$");
+              return;
+            }
+            const parsedValue = parseInt(targetValue);
+            setter(parsedValue ? parsedValue : getter());
           }
-        } else {
-          if (targetValue.includes("$")) {
-            setisDriven(true);
-            setvalue("$");
-            return;
-          }
-          const parsedValue = parseInt(targetValue);
-          setter(parsedValue ? parsedValue : getter());
-        }
-      }}
-    />
+        }}
+      />
+
+      {/**
+       * Increase
+       */}
+      <button
+        className={`${styles.button}`}
+        onClick={() => {
+          if (!isDriven) setter(getter() + 0.5);
+        }}
+      >
+        <ArrowRightIcon
+          style={{
+            width: "1.8rem",
+            height: "1.8rem",
+          }}
+        />
+      </button>
+    </div>
   );
 };
 

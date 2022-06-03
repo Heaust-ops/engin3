@@ -1,12 +1,15 @@
 import { FunctionComponent, useState } from "react";
 import styles from "./TransformsMenu.module.css";
 import ArrowRightIcon from "@material-ui/icons/ArrowRight";
-import NumericSliderInput from "../NumericSliderInput/NumericSliderInput";
+import TransformPropertyMenu from "./TransformPropertyMenu";
 
 interface TransformsMenuProps {}
 
 const TransformsMenu: FunctionComponent<TransformsMenuProps> = () => {
   const [isHidden, setisHidden] = useState(true);
+  const [selectedMenu, setselectedMenu] = useState<
+    "position" | "rotation" | "scale"
+  >("position");
   return (
     <div className={`${styles.Wrapper}`}>
       <div className={`${styles.ArrowWrapper}`}>
@@ -23,27 +26,62 @@ const TransformsMenu: FunctionComponent<TransformsMenuProps> = () => {
           }}
         />
       </div>
+
+      {/**
+       * Property Selection menu
+       */}
       <div
         style={{ width: `${isHidden ? 0 : 20}rem` }}
         className={`${styles.MenuBox}`}
       >
-        <NumericSliderInput
-          style={{
-            ...(isHidden
-              ? { width: 0, pointerEvents: "none", opacity: 0 }
-              : { width: "20rem" }),
-          }}
-          setter={(arg) => {
-            const selectedItem = window.selectedItems[0];
-            if (selectedItem) selectedItem.position.x = arg;
-          }}
-          getter={() => {
-            const selectedItem = window.selectedItems[0];
-            if (selectedItem) return selectedItem.position.x;
-            return 0;
-          }}
-          toUpdate={!isHidden}
-        />
+        <div className={`${styles.submenuWrapper}`}>
+          <button
+            onClick={() => setselectedMenu("position")}
+            className={`${styles.submenuButton} ${styles.position} ${
+              selectedMenu === "position" ? styles.active : ""
+            }`}
+            style={
+              isHidden
+                ? { width: 0, pointerEvents: "none", opacity: 0 }
+                : {
+                    backgroundColor: "#1e1e1e",
+                  }
+            }
+          >
+            Position
+          </button>
+          <button
+            onClick={() => setselectedMenu("rotation")}
+            className={`${styles.submenuButton} ${styles.rotation} ${
+              selectedMenu === "rotation" ? styles.active : ""
+            }`}
+            style={
+              isHidden
+                ? { width: 0, pointerEvents: "none", opacity: 0 }
+                : {
+                    backgroundColor: "#1e1e1e",
+                  }
+            }
+          >
+            Rotation
+          </button>
+          <button
+            onClick={() => setselectedMenu("scale")}
+            className={`${styles.submenuButton} ${styles.scale} ${
+              selectedMenu === "scale" ? styles.active : ""
+            }`}
+            style={
+              isHidden
+                ? { width: 0, pointerEvents: "none", opacity: 0 }
+                : {
+                    backgroundColor: "#1e1e1e",
+                  }
+            }
+          >
+            Scale
+          </button>
+        </div>
+        <TransformPropertyMenu isHidden={isHidden} property={selectedMenu} />
       </div>
     </div>
   );
