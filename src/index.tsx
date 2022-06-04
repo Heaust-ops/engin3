@@ -43,6 +43,7 @@ window.workingAxis = WorkingAxes.all;
 window.viewportMode = ViewportModes.navigate;
 window.viewportEventHistory = [];
 window.animationStack = [];
+window.materials = [window.defaultMaterial];
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement

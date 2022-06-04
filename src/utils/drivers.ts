@@ -26,6 +26,14 @@ export interface StringDriver extends BaseDriver {
 
 export type Driver = NumericDriver | StringDriver;
 
+export const testDriver = (expression: string) => `
+const own = 3;
+const te = 3;
+const [sin, cos, tan, pi, time] = [Math.sin, Math.cos, Math.tan, Math.PI, + new Date()];
+const [timed, timeS, timeD, timeM] = [time/100, time/1000, time/10000, time/60000];
+return(${expression});
+`;
+
 /**
  * Provides an animation function corresponding to the given driver.
  * @param driver The Driver

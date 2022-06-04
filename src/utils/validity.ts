@@ -1,3 +1,5 @@
+import { testDriver } from "./drivers";
+
 export const isSelectedMesh = () =>
   window.selectedItems &&
   window.selectedItems.filter((x) => ["Mesh"].includes(x.type));
@@ -15,7 +17,7 @@ export const isType = (arg: any, ...args: string[]) =>
 export const isSyntaxOk = (arg: string) => {
   try {
     // eslint-disable-next-line no-new-func
-    new Function(arg);
+    new Function(testDriver(arg))();
   } catch {
     return false;
   }

@@ -1,12 +1,20 @@
 import { FunctionComponent, HTMLAttributes, useEffect, useState } from "react";
 import styles from "./NumericSliderInput.module.css";
 import ArrowRightIcon from "@material-ui/icons/ArrowRight";
+import { isSyntaxOk } from "../../utils/validity";
 
 interface NumericSliderInputProps extends HTMLAttributes<HTMLDivElement> {
   getter: () => number;
   setter: (arg: number, asTransaction: boolean) => void;
   toUpdate?: boolean;
 }
+
+enum SyntaxBackground {
+  ok = "#1B2A1A",
+  notOk = "#2A1A1A",
+}
+
+const getDriverExpression = (arg: string) => arg.substring(1);
 
 const NumericSliderInput: FunctionComponent<NumericSliderInputProps> = ({
   getter,
@@ -16,6 +24,15 @@ const NumericSliderInput: FunctionComponent<NumericSliderInputProps> = ({
 }) => {
   const [value, setvalue] = useState(`${getter()}`);
   const [isDriven, setisDriven] = useState(false);
+  const [syntaxOk, setsyntaxOk] = useState(true);
+
+  useEffect(() => {
+    if (isDriven) {
+      const driverExpression = getDriverExpression(value);
+      if (driverExpression) setsyntaxOk(isSyntaxOk(driverExpression));
+      else setsyntaxOk(true);
+    }
+  }, [value, isDriven]);
 
   /**
    * Keep refreshing values if update is on
@@ -64,6 +81,18 @@ const NumericSliderInput: FunctionComponent<NumericSliderInputProps> = ({
       <input
         value={value}
         className={`${styles.input}`}
+        onKeyDown={(ev) => {
+          ev.stopPropagation();
+        }}
+        style={{
+          ...(isDriven
+            ? {
+                backgroundColor: syntaxOk
+                  ? SyntaxBackground.ok
+                  : SyntaxBackground.notOk,
+              }
+            : {}),
+        }}
         onChange={(ev) => {
           const targetValue = ev.target.value;
           setvalue(targetValue);
