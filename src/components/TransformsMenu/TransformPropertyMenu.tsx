@@ -1,4 +1,6 @@
 import { FunctionComponent } from "react";
+import { ViewportEventType } from "../../enums";
+import { commitTransaction, startTransaction } from "../../utils/transactions";
 import NumericSliderInput from "../NumericSliderInput/NumericSliderInput";
 
 interface TransformPropertyMenuProps {
@@ -6,9 +8,20 @@ interface TransformPropertyMenuProps {
   property: "position" | "rotation" | "scale";
 }
 
+const getTransformEventType = (property: "position" | "rotation" | "scale") => {
+  switch (property) {
+    case "position":
+      return ViewportEventType.grab;
+    case "rotation":
+      return ViewportEventType.rotate;
+    case "scale":
+      return ViewportEventType.scale;
+  }
+};
+
 const TransformPropertyMenu: FunctionComponent<TransformPropertyMenuProps> = ({
   isHidden,
-  property
+  property,
 }) => {
   return (
     <>
@@ -25,7 +38,11 @@ const TransformPropertyMenu: FunctionComponent<TransformPropertyMenuProps> = ({
         }}
         setter={(arg) => {
           const selectedItem = window.selectedItems[0];
-          if (selectedItem) selectedItem[property].x = arg;
+          if (selectedItem) {
+            startTransaction(getTransformEventType(property));
+            selectedItem[property].x = arg;
+            commitTransaction();
+          }
         }}
         getter={() => {
           const selectedItem = window.selectedItems[0];
@@ -48,7 +65,11 @@ const TransformPropertyMenu: FunctionComponent<TransformPropertyMenuProps> = ({
         }}
         setter={(arg) => {
           const selectedItem = window.selectedItems[0];
-          if (selectedItem) selectedItem[property].y = arg;
+          if (selectedItem) {
+            startTransaction(getTransformEventType(property));
+            selectedItem[property].y = arg;
+            commitTransaction();
+          }
         }}
         getter={() => {
           const selectedItem = window.selectedItems[0];
@@ -71,7 +92,11 @@ const TransformPropertyMenu: FunctionComponent<TransformPropertyMenuProps> = ({
         }}
         setter={(arg) => {
           const selectedItem = window.selectedItems[0];
-          if (selectedItem) selectedItem[property].z = arg;
+          if (selectedItem) {
+            startTransaction(getTransformEventType(property));
+            selectedItem[property].z = arg;
+            commitTransaction();
+          }
         }}
         getter={() => {
           const selectedItem = window.selectedItems[0];

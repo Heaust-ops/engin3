@@ -120,7 +120,8 @@ export const startTransaction = (type: ViewportEventType) => {
         initials = [item.rotation.x, item.rotation.y, item.rotation.z];
         break;
 
-      /** case ViewportEventType.loadMesh:
+      /**
+      case ViewportEventType.loadMesh:
         
          * Logic implemented in models directly
          * As it requires information from the callback
@@ -128,7 +129,8 @@ export const startTransaction = (type: ViewportEventType) => {
          * We could've passed the mechanism as a preprocess step
          * but that'd make the code less declarative
          
-        break;*/
+        break;
+      */
 
       case ViewportEventType.deleteMesh:
         const ve = getLatestVE(
