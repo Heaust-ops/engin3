@@ -14,17 +14,17 @@ export const isMesh = (arg: any) =>
 export const isType = (arg: any, ...args: string[]) =>
   arg?.type && typeof arg.type === "string" && args.includes(arg.type);
 
-export const isSyntaxOk = (arg: string, returnType: string[] | null = null) => {
+export const isSyntaxOk = (arg: string, returnTypes: string[] | null = null) => {
   try {
+    // eslint-disable-next-line no-new-func
+    const x = new Function(testDriver(arg))();
     if (
-      returnType &&
-      returnType.length &&
+      returnTypes &&
+      returnTypes.length &&
       // eslint-disable-next-line no-new-func
-      !returnType.includes(typeof new Function(testDriver(arg))())
+      (!returnTypes.includes(typeof x) || isNaN(x))
     )
       return false;
-    // eslint-disable-next-line no-new-func
-    else new Function(testDriver(arg))();
   } catch {
     return false;
   }

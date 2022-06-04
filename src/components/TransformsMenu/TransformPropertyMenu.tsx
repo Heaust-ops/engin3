@@ -1,4 +1,4 @@
-import { FunctionComponent } from "react";
+import { FunctionComponent, useEffect, useState } from "react";
 import { ViewportEventType } from "../../enums";
 import { commitTransaction, startTransaction } from "../../utils/transactions";
 import NumericSliderInput from "../NumericSliderInput/NumericSliderInput";
@@ -19,10 +19,24 @@ const getTransformEventType = (property: "position" | "rotation" | "scale") => {
   }
 };
 
+let selectedItemInterval: NodeJS.Timer | null = null;
+
 const TransformPropertyMenu: FunctionComponent<TransformPropertyMenuProps> = ({
   isHidden,
   property,
 }) => {
+  const [selectedItem, setselectedItem] = useState<THREE.Object3D | null>(null);
+  useEffect(() => {
+    if (!isHidden)
+      selectedItemInterval = setInterval(
+        () => setselectedItem(window.selectedItems[0]),
+        40
+      );
+    return () => {
+      if (selectedItemInterval) clearInterval(selectedItemInterval);
+    };
+  }, [isHidden]);
+
   return (
     <>
       <h3
@@ -31,13 +45,13 @@ const TransformPropertyMenu: FunctionComponent<TransformPropertyMenuProps> = ({
         X:
       </h3>
       <NumericSliderInput
+        property={`${property}.x`}
         style={{
           ...(isHidden
             ? { width: 0, pointerEvents: "none", opacity: 0 }
             : { width: "20rem" }),
         }}
         setter={(arg, asTransaction: boolean) => {
-          const selectedItem = window.selectedItems[0];
           if (selectedItem) {
             if (asTransaction)
               startTransaction(getTransformEventType(property));
@@ -46,11 +60,11 @@ const TransformPropertyMenu: FunctionComponent<TransformPropertyMenuProps> = ({
           }
         }}
         getter={() => {
-          const selectedItem = window.selectedItems[0];
           if (selectedItem) return selectedItem[property].x;
           return 0;
         }}
         toUpdate={!isHidden}
+        objectId={selectedItem ? selectedItem.id : -1}
       />
 
       <h3
@@ -59,13 +73,13 @@ const TransformPropertyMenu: FunctionComponent<TransformPropertyMenuProps> = ({
         Y:
       </h3>
       <NumericSliderInput
+        property={`${property}.y`}
         style={{
           ...(isHidden
             ? { width: 0, pointerEvents: "none", opacity: 0 }
             : { width: "20rem" }),
         }}
         setter={(arg, asTransaction: boolean) => {
-          const selectedItem = window.selectedItems[0];
           if (selectedItem) {
             if (asTransaction)
               startTransaction(getTransformEventType(property));
@@ -74,11 +88,11 @@ const TransformPropertyMenu: FunctionComponent<TransformPropertyMenuProps> = ({
           }
         }}
         getter={() => {
-          const selectedItem = window.selectedItems[0];
           if (selectedItem) return selectedItem[property].y;
           return 0;
         }}
         toUpdate={!isHidden}
+        objectId={selectedItem ? selectedItem.id : -1}
       />
 
       <h3
@@ -87,13 +101,13 @@ const TransformPropertyMenu: FunctionComponent<TransformPropertyMenuProps> = ({
         Z:
       </h3>
       <NumericSliderInput
+        property={`${property}.z`}
         style={{
           ...(isHidden
             ? { width: 0, pointerEvents: "none", opacity: 0 }
             : { width: "20rem" }),
         }}
         setter={(arg, asTransaction: boolean) => {
-          const selectedItem = window.selectedItems[0];
           if (selectedItem) {
             if (asTransaction)
               startTransaction(getTransformEventType(property));
@@ -102,11 +116,11 @@ const TransformPropertyMenu: FunctionComponent<TransformPropertyMenuProps> = ({
           }
         }}
         getter={() => {
-          const selectedItem = window.selectedItems[0];
           if (selectedItem) return selectedItem[property].z;
           return 0;
         }}
         toUpdate={!isHidden}
+        objectId={selectedItem ? selectedItem.id : -1}
       />
     </>
   );

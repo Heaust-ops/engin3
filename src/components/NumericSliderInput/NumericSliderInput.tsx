@@ -2,10 +2,20 @@ import { FunctionComponent, HTMLAttributes, useEffect, useState } from "react";
 import styles from "./NumericSliderInput.module.css";
 import ArrowRightIcon from "@material-ui/icons/ArrowRight";
 import { isSyntaxOk } from "../../utils/validity";
+import {
+  applyDriver,
+  deleteDriver,
+  Driver,
+  driverAnimationId,
+  getDriver,
+} from "../../utils/drivers";
+import { DriverType } from "../../enums";
 
 interface NumericSliderInputProps extends HTMLAttributes<HTMLDivElement> {
   getter: () => number;
   setter: (arg: number, asTransaction: boolean) => void;
+  objectId: number;
+  property: string;
   toUpdate?: boolean;
 }
 
@@ -19,6 +29,8 @@ const getDriverExpression = (arg: string) => arg.substring(1);
 const NumericSliderInput: FunctionComponent<NumericSliderInputProps> = ({
   getter,
   setter,
+  objectId,
+  property,
   toUpdate = true,
   ...props
 }) => {
@@ -27,13 +39,50 @@ const NumericSliderInput: FunctionComponent<NumericSliderInputProps> = ({
   const [syntaxOk, setsyntaxOk] = useState(true);
 
   useEffect(() => {
-    if (isDriven) {
-      const driverExpression = getDriverExpression(value);
-      if (driverExpression)
-        setsyntaxOk(isSyntaxOk(driverExpression, ["number"]));
-      else setsyntaxOk(true);
+    const driver = getDriver(objectId, property);
+    if (driver) {
+      setisDriven(true);
+      setvalue("$ " + driver.expression);
+    } else {
+      deleteDriver(objectId, property);
+      setisDriven(false);
+      setvalue(`${getter()}`);
     }
-  }, [value, isDriven]);
+  }, [getter, objectId, property]);
+
+  useEffect(() => {
+    if (!isDriven) return;
+
+    /**
+     * Syntax Checking
+     */
+    const expression = getDriverExpression(value);
+    if (!expression) {
+      setsyntaxOk(true);
+      return;
+    }
+
+    const syntaxFlag = isSyntaxOk(expression, ["number"]);
+    setsyntaxOk(syntaxFlag);
+    if (!syntaxFlag) return;
+
+    /**
+     * Apply Driver
+     */
+    const newDriver = {
+      objectId,
+      property,
+      expression,
+      type: DriverType.numeric,
+      animationId: driverAnimationId(objectId, property),
+      getter,
+      setter: (arg: number) => {
+        setter(arg, false);
+      },
+    } as Driver;
+    applyDriver(newDriver);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDriven, value]);
 
   /**
    * Keep refreshing values if update is on
@@ -51,6 +100,7 @@ const NumericSliderInput: FunctionComponent<NumericSliderInputProps> = ({
     };
   }, [getter, isDriven, toUpdate]);
 
+  /** Logic for Driver Mode */
   useEffect(() => {
     if (!isDriven && value.includes("$")) setvalue(`${getter()}`);
     if (isDriven && !value.includes("$")) setvalue(`$`);

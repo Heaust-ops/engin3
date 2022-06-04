@@ -25,10 +25,13 @@ export const addAnimationStep = (f: AnimationFunction) => {
 };
 
 export const updateAnimationStep = (id: number, f: AnimationFunction) => {
+  if (id < 0 || id > window.animationStack.length) return -1;
   window.animationStack[id] = f;
   return id;
 };
 
 export const removeAnimationStep = (id: number) => {
+  if (id < 0 || id > window.animationStack.length) return false;
   window.animationStack[id] = null;
+  return true;
 };
