@@ -1,12 +1,10 @@
 import { FunctionComponent, HTMLAttributes, useEffect, useState } from "react";
 import styles from "./NumericSliderInput.module.css";
 import ArrowRightIcon from "@material-ui/icons/ArrowRight";
-import { commitTransaction, startTransaction } from "../../utils/transactions";
-import { ViewportEventType } from "../../enums";
 
 interface NumericSliderInputProps extends HTMLAttributes<HTMLDivElement> {
   getter: () => number;
-  setter: (arg: number) => void;
+  setter: (arg: number, asTransaction: boolean) => void;
   toUpdate?: boolean;
 }
 
@@ -48,7 +46,7 @@ const NumericSliderInput: FunctionComponent<NumericSliderInputProps> = ({
       <button
         className={`${styles.button}`}
         onClick={() => {
-          if (!isDriven) setter(getter() - 0.5);
+          if (!isDriven) setter(getter() - 0.5, true);
         }}
       >
         <ArrowRightIcon
@@ -82,7 +80,7 @@ const NumericSliderInput: FunctionComponent<NumericSliderInputProps> = ({
               return;
             }
             const parsedValue = parseFloat(targetValue);
-            setter(parsedValue ? parsedValue : getter());
+            setter(parsedValue ? parsedValue : getter(), true);
           }
         }}
       />
@@ -93,7 +91,7 @@ const NumericSliderInput: FunctionComponent<NumericSliderInputProps> = ({
       <button
         className={`${styles.button}`}
         onClick={() => {
-          if (!isDriven) setter(getter() + 0.5);
+          if (!isDriven) setter(getter() + 0.5, true);
         }}
       >
         <ArrowRightIcon

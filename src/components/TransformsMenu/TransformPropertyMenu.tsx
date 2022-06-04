@@ -36,12 +36,13 @@ const TransformPropertyMenu: FunctionComponent<TransformPropertyMenuProps> = ({
             ? { width: 0, pointerEvents: "none", opacity: 0 }
             : { width: "20rem" }),
         }}
-        setter={(arg) => {
+        setter={(arg, asTransaction: boolean) => {
           const selectedItem = window.selectedItems[0];
           if (selectedItem) {
-            startTransaction(getTransformEventType(property));
+            if (asTransaction)
+              startTransaction(getTransformEventType(property));
             selectedItem[property].x = arg;
-            commitTransaction();
+            if (asTransaction) commitTransaction();
           }
         }}
         getter={() => {
@@ -63,12 +64,13 @@ const TransformPropertyMenu: FunctionComponent<TransformPropertyMenuProps> = ({
             ? { width: 0, pointerEvents: "none", opacity: 0 }
             : { width: "20rem" }),
         }}
-        setter={(arg) => {
+        setter={(arg, asTransaction: boolean) => {
           const selectedItem = window.selectedItems[0];
           if (selectedItem) {
-            startTransaction(getTransformEventType(property));
+            if (asTransaction)
+              startTransaction(getTransformEventType(property));
             selectedItem[property].y = arg;
-            commitTransaction();
+            if (asTransaction) commitTransaction();
           }
         }}
         getter={() => {
@@ -90,12 +92,13 @@ const TransformPropertyMenu: FunctionComponent<TransformPropertyMenuProps> = ({
             ? { width: 0, pointerEvents: "none", opacity: 0 }
             : { width: "20rem" }),
         }}
-        setter={(arg) => {
+        setter={(arg, asTransaction: boolean) => {
           const selectedItem = window.selectedItems[0];
           if (selectedItem) {
-            startTransaction(getTransformEventType(property));
+            if (asTransaction)
+              startTransaction(getTransformEventType(property));
             selectedItem[property].z = arg;
-            commitTransaction();
+            if (asTransaction) commitTransaction();
           }
         }}
         getter={() => {
