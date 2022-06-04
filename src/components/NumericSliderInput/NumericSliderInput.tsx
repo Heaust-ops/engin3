@@ -29,7 +29,8 @@ const NumericSliderInput: FunctionComponent<NumericSliderInputProps> = ({
   useEffect(() => {
     if (isDriven) {
       const driverExpression = getDriverExpression(value);
-      if (driverExpression) setsyntaxOk(isSyntaxOk(driverExpression));
+      if (driverExpression)
+        setsyntaxOk(isSyntaxOk(driverExpression, ["number"]));
       else setsyntaxOk(true);
     }
   }, [value, isDriven]);
