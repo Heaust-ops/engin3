@@ -1,4 +1,4 @@
-import { MeshLoadMethod, ViewportEventType } from "../enums";
+import { DriverType, MeshLoadMethod, ViewportEventType } from "../enums";
 import { getLoader } from "./models";
 import {
   commitTransaction,
@@ -6,6 +6,8 @@ import {
   startTransaction,
 } from "./transactions";
 import { selectObject3D, unselectObject3D } from "./selection";
+import { applyDriver, deleteDriver, Driver } from "./drivers";
+import { removeAnimationStep } from "./animations";
 
 /**
  * Interfaces and Methods
@@ -17,7 +19,7 @@ import { selectObject3D, unselectObject3D } from "./selection";
 /** */
 export interface ViewportEvent {
   type: ViewportEventType;
-  info: ViewportEventAxesInfo | ViewportEventMeshInfo;
+  info: ViewportEventAxesInfo | ViewportEventMeshInfo | DriverInfo;
 }
 export interface ViewportEventAxesInfo {
   objectID: number;
@@ -27,6 +29,17 @@ export interface ViewportEventAxesInfo {
   initialX: number;
   initialY: number;
   initialZ: number;
+}
+
+export interface DriverInfo {
+  objectID: number;
+  property: string;
+  animationId: number;
+  type: DriverType;
+  getter: Driver["getter"];
+  setter: Driver["setter"];
+  initialExpression: Driver["expression"] | null; // Null When Loaded
+  finalExpression: Driver["expression"] | null; // Null When Deleted
 }
 
 export interface ViewportEventMeshInfo {
@@ -297,6 +310,23 @@ export const reverseVE = (ve: ViewportEvent | number) => {
 
     case ViewportEventType.deleteMesh:
       return reloadFromVE(ve);
+    case ViewportEventType.setDriver:
+      const info = ve.info as DriverInfo;
+      /** Reverse Load */
+      if (info.initialExpression === null) {
+        deleteDriver(info.objectID, info.property, false);
+        removeAnimationStep(info.animationId);
+        return true;
+      }
+
+      /** Reverse Delete and Change */
+      const { initialExpression, finalExpression, ...tempDriver } = info;
+      const newDriver = {
+        ...tempDriver,
+        expression: initialExpression,
+      } as Driver;
+      applyDriver(newDriver, false);
+      return true;
   }
 };
 

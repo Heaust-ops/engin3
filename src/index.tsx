@@ -11,7 +11,6 @@ import { MousePosition } from "./interfaces";
 import { ViewportEvent } from "./utils/events";
 import { PendingTransaction } from "./utils/transactions";
 import { AnimationFunction } from "./utils/animations";
-import { Driver, DriverRecord } from "./utils/drivers";
 
 /**
  * Heap Variables
@@ -33,7 +32,6 @@ declare global {
     pendingTransactions: PendingTransaction[];
     multiselect: boolean;
     animationStack: (AnimationFunction | null)[];
-    driverStack: Driver[];
     previousRAF: number;
   }
 }
@@ -45,7 +43,6 @@ window.workingAxis = WorkingAxes.all;
 window.viewportMode = ViewportModes.navigate;
 window.viewportEventHistory = [];
 window.animationStack = [];
-window.driverStack = [];
 window.materials = [window.defaultMaterial];
 
 const root = ReactDOM.createRoot(

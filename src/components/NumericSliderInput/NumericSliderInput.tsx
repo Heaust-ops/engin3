@@ -42,16 +42,19 @@ const NumericSliderInput: FunctionComponent<NumericSliderInputProps> = ({
     const driver = getDriver(objectId, property);
     if (driver) {
       setisDriven(true);
-      setvalue("$ " + driver.expression);
+      setvalue("$" + driver.expression);
     } else {
-      deleteDriver(objectId, property);
+      deleteDriver(objectId, property, false);
       setisDriven(false);
       setvalue(`${getter()}`);
     }
   }, [getter, objectId, property]);
 
   useEffect(() => {
-    if (!isDriven) return;
+    if (!isDriven) {
+      deleteDriver(objectId, property, false);
+      return;
+    }
 
     /**
      * Syntax Checking
@@ -70,7 +73,7 @@ const NumericSliderInput: FunctionComponent<NumericSliderInputProps> = ({
      * Apply Driver
      */
     const newDriver = {
-      objectId,
+      objectID: objectId,
       property,
       expression,
       type: DriverType.numeric,
@@ -81,7 +84,7 @@ const NumericSliderInput: FunctionComponent<NumericSliderInputProps> = ({
       },
     } as Driver;
     applyDriver(newDriver);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDriven, value]);
 
   /**
@@ -130,6 +133,7 @@ const NumericSliderInput: FunctionComponent<NumericSliderInputProps> = ({
        * Change
        */}
       <input
+        spellCheck={false}
         value={value}
         className={`${styles.input}`}
         onKeyDown={(ev) => {

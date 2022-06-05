@@ -30,7 +30,6 @@ export enum ViewportEventType {
   loadMesh = "loadMesh",
   deleteMesh = "deleteMesh",
   setDriver = "setDriver",
-  deleteDriver = "deleteDriver",
 }
 
 export enum Primitives {

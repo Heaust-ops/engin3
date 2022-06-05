@@ -144,7 +144,6 @@ export const startTransaction = (type: ViewportEventType) => {
             method: (ve.info as ViewportEventMeshInfo).method,
           };
         }
-
         break;
     }
 

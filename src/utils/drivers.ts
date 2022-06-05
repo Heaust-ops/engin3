@@ -1,14 +1,15 @@
-import { DriverType } from "../enums";
+import { DriverType, ViewportEventType } from "../enums";
 import {
   addAnimationStep,
   AnimationFunction,
   removeAnimationStep,
   updateAnimationStep,
 } from "./animations";
+import { DriverInfo, getLatestVE, ViewportEvent } from "./events";
 import { isSyntaxOk } from "./validity";
 
 export interface BaseDriver {
-  objectId: number;
+  objectID: number;
   property: string;
   expression: string;
   type: DriverType;
@@ -37,34 +38,33 @@ export interface DriverRecord {
 export const testDriver = (expression: string) => `
 const own = 3;
 const te = 3;
+const [sign, pow, sq] = [Math.sign, Math.pow, (x)=>Math.pow(x, 2)];
 const [sin, cos, tan, pi, time] = [Math.sin, Math.cos, Math.tan, Math.PI, + new Date()];
 const [timed, timeS, timeD, timeM] = [time/100, time/1000, time/10000, time/60000];
 return(${expression});
 `;
 
 /**
- * @param getter The Getter Of The Driver
- * @returns Index Of the Driver in the Driver Stack
- */
-export const driverId = (objectId: number, property: string) => {
-  let driverIndex = -1;
-  window.driverStack.forEach((driver, index) => {
-    if (driver.objectId === objectId && driver.property === property) {
-      driverIndex = index;
-    }
-  });
-
-  return driverIndex;
-};
-
-/**
  * @param getter The Getter Of the Driver you wanna get
  * @returns Driver if found, else null
  */
 export const getDriver = (objectId: number, property: string) => {
-  const id = driverId(objectId, property);
-  if (id < 0) return null;
-  return window.driverStack[id];
+  const ve = getLatestVE(
+    ViewportEventType.setDriver,
+    null,
+    (ve) =>
+      ve.info.objectID === objectId &&
+      !!(ve.info as DriverInfo).property &&
+      (ve.info as DriverInfo).property === property
+  );
+
+  if (!ve) return null;
+  if ((ve.info as DriverInfo).finalExpression === null) return null;
+
+  const { initialExpression, finalExpression, ...tempDriver } =
+    ve.info as DriverInfo;
+  const driver = { ...tempDriver, expression: finalExpression };
+  return driver;
 };
 
 /**
@@ -74,7 +74,7 @@ export const getDriver = (objectId: number, property: string) => {
  */
 const prepareDriver = (driver: Driver) => {
   if (!isSyntaxOk(driver.expression)) return null;
-  const driverObject = window.scene.getObjectById(driver.objectId);
+  const driverObject = window.scene.getObjectById(driver.objectID);
   if (!driverObject) return null;
   /**
    * Animation function for a driver.
@@ -89,6 +89,7 @@ const prepareDriver = (driver: Driver) => {
     const preparedExpression = `
         const own = ${driver.getter()};
         const te = ${timeElapsed};
+        const [sign, pow, sq] = [Math.sign, Math.pow, (x)=>Math.pow(x, 2)];
         const [sin, cos, tan, pi, time] = [Math.sin, Math.cos, Math.tan, Math.PI, + new Date()];
         const [timed, timeS, timeD, timeM] = [time/100, time/1000, time/10000, time/60000];
         return(${driver.expression});
@@ -126,26 +127,41 @@ const prepareDriver = (driver: Driver) => {
  * @param driver The Driver Object
  * @returns Animation Id
  */
-export const applyDriver = (driver: Driver) => {
+export const applyDriver = (driver: Driver, asTransaction: boolean = true) => {
   const animationFunction = prepareDriver(driver);
   /** If Syntax Error */
   if (!animationFunction) return null;
+  const previousDriver = getDriver(driver.objectID, driver.property);
+
+  const { expression, ...tempDriver } = driver;
+  const ve = {
+    type: ViewportEventType.setDriver,
+    info: {
+      ...tempDriver,
+      initialExpression: null,
+      finalExpression: expression,
+    },
+  } as ViewportEvent;
 
   /** First Time creating this driver */
-  if (driver.animationId < 0) {
-    driver.animationId = addAnimationStep(
+  if (!previousDriver?.expression || driver.animationId < 0) {
+    (ve.info as DriverInfo).animationId = addAnimationStep(
       animationFunction as AnimationFunction
     );
-    window.driverStack.push(driver);
-    return driver.animationId;
+    if (asTransaction) window.viewportEventHistory.push(ve);
+    return (ve.info as DriverInfo).animationId;
   }
 
   /** Updating this driver */
-  window.driverStack[driverId(driver.objectId, driver.property)] = driver;
-  return updateAnimationStep(
+  (ve.info as DriverInfo).initialExpression = previousDriver.expression;
+
+  (ve.info as DriverInfo).animationId = updateAnimationStep(
     driver.animationId,
     animationFunction as AnimationFunction
   );
+  if (asTransaction) window.viewportEventHistory.push(ve);
+
+  return (ve.info as DriverInfo).animationId;
 };
 
 /**
@@ -153,12 +169,25 @@ export const applyDriver = (driver: Driver) => {
  * @param getter The Getter of the Driver.
  * @returns Completion status, true or false
  */
-export const deleteDriver = (objectId: number, property: string) => {
-  const id = driverId(objectId, property);
-  if (id < 0) return false;
-  const driver = window.driverStack[id];
-  removeAnimationStep(driver.animationId);
-  window.driverStack.splice(id, 1);
+export const deleteDriver = (
+  objectId: number,
+  property: string,
+  asTransaction: boolean = true
+) => {
+  const previousDriver = getDriver(objectId, property);
+  if (!previousDriver) return false;
+  removeAnimationStep(previousDriver.animationId);
+  const { expression, ...tempDriver } = previousDriver;
+  const ve = {
+    type: ViewportEventType.setDriver,
+    info: {
+      ...tempDriver,
+      animationId: -1,
+      initialExpression: expression,
+      finalExpression: null,
+    },
+  } as ViewportEvent;
+  if (asTransaction) window.viewportEventHistory.push(ve);
   return true;
 };
 

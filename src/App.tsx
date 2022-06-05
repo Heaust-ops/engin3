@@ -23,6 +23,7 @@ import { handleHotkeys } from "./utils/viewportHotkeys";
 import TransformsMenu from "./components/TransformsMenu/TransformsMenu";
 import { Vector3 } from "three";
 import { grab, rotate } from "./utils/transforms";
+import { numSelected } from "./utils/selection";
 
 /**
  * Because Writing (ev) => ev.preventDefault();
@@ -213,7 +214,7 @@ const App = () => {
          */}
         <div
           onClick={() => {
-            setselectedItemsCount(window.selectedItems.length);
+            setselectedItemsCount(numSelected());
           }}
           onDrop={(ev) => {
             /**
