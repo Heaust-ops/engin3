@@ -310,6 +310,7 @@ export const reverseVE = (ve: ViewportEvent | number) => {
 
     case ViewportEventType.deleteMesh:
       return reloadFromVE(ve);
+
     case ViewportEventType.setDriver:
       const info = ve.info as DriverInfo;
       /** Reverse Load */

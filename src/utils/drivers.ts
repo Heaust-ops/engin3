@@ -35,18 +35,49 @@ export interface DriverRecord {
   getter: Driver["getter"];
 }
 
+/**
+ * Everything Related to Drivers is here.
+ *
+ * Transactions are built into drivers
+ * If it is relevant,
+ * the action wil automatically be carried out as a transaction.
+ *
+ * Driver are mini animations of various fields.
+ * They help in making your scenes more dynamic.
+ *
+ * Check DriverConstants below for a list of keywords you can use in drivers.
+ *
+ * Other than that there's,
+ *
+ * - own: Own value, like 'this.value'
+ * - te: time elapsed in ms since last frame
+ *
+ */
+
+const DriverConstants = `
+const [sign, pow, sq, abs] = [Math.sign, Math.pow, (x)=>Math.pow(x, 2), Math.abs];
+const [sin, cos, tan, pi, time] = [Math.sin, Math.cos, Math.tan, Math.PI, + new Date()];
+const [timed, timeS, timeD, timeM] = [time/100, time/1000, time/10000, time/60000];
+`;
+
+/**
+ * Prepare a test driver to check for syntax validity
+ * @param expression The Expression to check
+ * @returns The Expression wrapped with Driver template
+ */
 export const testDriver = (expression: string) => `
 const own = 3;
 const te = 3;
-const [sign, pow, sq] = [Math.sign, Math.pow, (x)=>Math.pow(x, 2)];
-const [sin, cos, tan, pi, time] = [Math.sin, Math.cos, Math.tan, Math.PI, + new Date()];
-const [timed, timeS, timeD, timeM] = [time/100, time/1000, time/10000, time/60000];
+${DriverConstants}
 return(${expression});
 `;
 
 /**
- * @param getter The Getter Of the Driver you wanna get
- * @returns Driver if found, else null
+ * Get the Driver for a certain property of a certain object.
+ * @param objectId Object ID of the driver you wanna get
+ * @param property Property the driver you wanna get controls
+ * @returns The driver the given object's given property, if exists,
+ * NULL otherwise
  */
 export const getDriver = (objectId: number, property: string) => {
   const ve = getLatestVE(
@@ -89,9 +120,7 @@ const prepareDriver = (driver: Driver) => {
     const preparedExpression = `
         const own = ${driver.getter()};
         const te = ${timeElapsed};
-        const [sign, pow, sq] = [Math.sign, Math.pow, (x)=>Math.pow(x, 2)];
-        const [sin, cos, tan, pi, time] = [Math.sin, Math.cos, Math.tan, Math.PI, + new Date()];
-        const [timed, timeS, timeD, timeM] = [time/100, time/1000, time/10000, time/60000];
+        ${DriverConstants}
         return(${driver.expression});
         `;
 
@@ -125,6 +154,7 @@ const prepareDriver = (driver: Driver) => {
 /**
  * Creates or Updates a Driver
  * @param driver The Driver Object
+ * @param asTransaction Is this a transaction? default: true
  * @returns Animation Id
  */
 export const applyDriver = (driver: Driver, asTransaction: boolean = true) => {
@@ -165,8 +195,14 @@ export const applyDriver = (driver: Driver, asTransaction: boolean = true) => {
 };
 
 /**
+ *
+ * @returns
+ */
+/**
  * Gets rid of the driver and its animation.
- * @param getter The Getter of the Driver.
+ * @param objectId Object ID of the driver you wanna get rid if
+ * @param property Property the driver you wanna get rid of controls
+ * @param asTransaction Is this a transaction? default: true
  * @returns Completion status, true or false
  */
 export const deleteDriver = (
@@ -192,8 +228,11 @@ export const deleteDriver = (
 };
 
 /**
- * @param getter Getter of the driver
- * @returns Animation Id of the driver if exists, -1 otherwise
+ * Returns the animation Id of a driver animation
+ * @param objectId Object ID of the driver you wanna get rid if
+ * @param property Property the driver you wanna get
+ * animation Id of controls
+ * @returns Animation Id or -1 if not found
  */
 export const driverAnimationId = (objectId: number, property: string) => {
   const driver = getDriver(objectId, property);
