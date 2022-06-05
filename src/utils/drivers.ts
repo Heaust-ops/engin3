@@ -8,6 +8,15 @@ import {
 import { DriverInfo, getLatestVE, ViewportEvent } from "./events";
 import { isSyntaxOk } from "./validity";
 
+/**
+ * Interfaces and Methods
+ * for Interacting with Drivers
+ * go here
+ */
+
+/** ============================================ */
+/** */
+
 export interface BaseDriver {
   objectID: number;
   property: string;
