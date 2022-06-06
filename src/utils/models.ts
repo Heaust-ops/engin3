@@ -313,7 +313,7 @@ export const loadLight = ({
       break;
     }
     case Lights.hemispehre: {
-      light = new THREE.HemisphereLight(0xffffbb, 0x080820, 1);
+      light = new THREE.HemisphereLight(0xff0000, 0x00ff00, 1);
       const helper = new THREE.HemisphereLightHelper(
         light as THREE.HemisphereLight,
         1, "#D87EBE"

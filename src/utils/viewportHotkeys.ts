@@ -1,8 +1,4 @@
-import {
-  ViewportModes,
-  ViewportEventType,
-  WorkingAxes,
-} from "../enums";
+import { ViewportModes, ViewportEventType, WorkingAxes } from "../enums";
 import {
   LightTypes,
   MeshyTypes,
@@ -16,7 +12,7 @@ import {
   removeSelectedMesh,
   commitTransaction,
 } from "./transactions";
-import { doForSelectedItems } from "./utils";
+import { doForSelectedItems, makeGroup, unmakeGroup } from "./utils";
 import { isSelectedType } from "./validity";
 
 /**
@@ -224,17 +220,47 @@ export const handleHotkeys = (
       if (!window.multiselect) window.multiselect = true;
       break;
 
+    /**
+     * B: Handles Grouping, UnGrouping and DL target (Bind)
+     *
+     * Groupes a number of objects together,
+     * Undoes a Group,
+     * Used to set the target of directional light
+     */
     case "b":
       const selected = properSelected(window.selectedItems);
-      if (selected.length !== 2 || !isSelectedType("DirectionalLight")) return;
-      let light: THREE.DirectionalLight, object: THREE.Object3D;
-      light = LightTypes.includes(selected[0].type)
-        ? (selected[0] as THREE.DirectionalLight)
-        : (selected[1] as THREE.DirectionalLight);
-      object = MeshyTypes.includes(selected[0].type)
-        ? (selected[0] as THREE.Object3D)
-        : (selected[1] as THREE.Object3D);
-      light.target = object;
+
+      /**
+       * Set the target of directional light
+       * If a directional light and 1 Other Object3D is selected
+       */
+      if (selected.length === 2 && isSelectedType("DirectionalLight")) {
+        let light: THREE.DirectionalLight, object: THREE.Object3D;
+        light = LightTypes.includes(selected[0].type)
+          ? (selected[0] as THREE.DirectionalLight)
+          : (selected[1] as THREE.DirectionalLight);
+        object = MeshyTypes.includes(selected[0].type)
+          ? (selected[0] as THREE.Object3D)
+          : (selected[1] as THREE.Object3D);
+        light.target = object;
+        return;
+      }
+
+      /**
+       * Group Objects
+       */
+      if (selected.length > 1) {
+        makeGroup(window.selectedItems);
+        return;
+      }
+
+      /**
+       * Ungroup a group
+       */
+      if (selected.length === 1 && selected[0].type === "Group") {
+        unmakeGroup(selected[0] as THREE.Group);
+      }
+
       break;
   }
 };

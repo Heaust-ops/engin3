@@ -1,4 +1,4 @@
-import { Vector3 } from "three";
+import { Group, Vector3 } from "three";
 import { WorkingAxes } from "../enums";
 import { MousePosition } from "../interfaces";
 
@@ -126,4 +126,20 @@ export const getVector3Component = (vec: Vector3, axis: WorkingAxes) => {
     case WorkingAxes.notz:
       return new Vector3(vec.x, vec.y, 0);
   }
+};
+
+export const makeGroup = (items: THREE.Object3D[]) => {
+  const group = new Group();
+  items.forEach((item) => {
+    window.scene.remove(item);
+    group.add(item);
+  });
+  window.scene.add(group);
+};
+
+export const unmakeGroup = (group: THREE.Group) => {
+  for (let i = group.children.length - 1; i >= 0; i--) {
+    window.scene.attach(group.children[i]);
+  }
+  window.scene.remove(group);
 };
