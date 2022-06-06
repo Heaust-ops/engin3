@@ -46,6 +46,8 @@ const menus = {
   },
 };
 
+let eventHistoryBroomPoller: NodeJS.Timer;
+
 /**
  * The Outermost React Component
  */
@@ -66,11 +68,20 @@ const App = () => {
     window.addEventListener("dragover", preventDefault, false);
     window.addEventListener("drop", preventDefault, false);
 
+    /** Polling for high memory usage and cleaning up */
+    eventHistoryBroomPoller = setInterval(() => {
+      /** Coalesce first half of events if event history is large */
+      /** See memory.ts */
+      if (window.viewportEventHistory.length > 500)
+        coalesceVEHistory(window.viewportEventHistory.length / 2);
+    }, 60000 /** Every Minute */);
+
     return () => {
       // Cleanup
       document.removeEventListener("mousemove", keepTrackOfCursor, false);
       window.removeEventListener("dragover", preventDefault, false);
       window.removeEventListener("drop", preventDefault, false);
+      if (eventHistoryBroomPoller) clearInterval(eventHistoryBroomPoller);
     };
   }, []);
 
