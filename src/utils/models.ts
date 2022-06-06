@@ -316,7 +316,8 @@ export const loadLight = ({
       light = new THREE.HemisphereLight(0xff0000, 0x00ff00, 1);
       const helper = new THREE.HemisphereLightHelper(
         light as THREE.HemisphereLight,
-        1, "#D87EBE"
+        1,
+        "#D87EBE"
       );
       helper.type = "HemisphereLightHelper";
       window.scene.add(helper);
@@ -339,7 +340,11 @@ export const loadLight = ({
         "#9859BF"
       );
       helper.type = "SpotLightHelper";
-      helper.scale.set(0.001, 0.001, 0.001);
+      addAnimationStep(() => {
+        if ((light as THREE.SpotLight)?.target) {
+          light!.lookAt((light as THREE.SpotLight).target.position);
+        }
+      });
       window.scene.add(helper);
       break;
     }

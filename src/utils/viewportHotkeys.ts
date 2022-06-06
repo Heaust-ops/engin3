@@ -234,11 +234,15 @@ export const handleHotkeys = (
        * Set the target of directional light
        * If a directional light and 1 Other Object3D is selected
        */
-      if (selected.length === 2 && isSelectedType("DirectionalLight")) {
-        let light: THREE.DirectionalLight, object: THREE.Object3D;
+      if (
+        selected.length === 2 &&
+        isSelectedType("DirectionalLight", "SpotLight")
+      ) {
+        let light: THREE.DirectionalLight | THREE.SpotLight,
+          object: THREE.Object3D;
         light = LightTypes.includes(selected[0].type)
-          ? (selected[0] as THREE.DirectionalLight)
-          : (selected[1] as THREE.DirectionalLight);
+          ? (selected[0] as THREE.DirectionalLight | THREE.SpotLight)
+          : (selected[1] as THREE.DirectionalLight | THREE.SpotLight);
         object = MeshyTypes.includes(selected[0].type)
           ? (selected[0] as THREE.Object3D)
           : (selected[1] as THREE.Object3D);
