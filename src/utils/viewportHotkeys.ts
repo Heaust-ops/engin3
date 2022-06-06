@@ -1,6 +1,15 @@
-import { ViewportModes, ViewportEventType, WorkingAxes } from "../enums";
-import { ViewportInteractionAllowed } from "./constants";
+import {
+  ViewportModes,
+  ViewportEventType,
+  WorkingAxes,
+} from "../enums";
+import {
+  LightTypes,
+  MeshyTypes,
+  ViewportInteractionAllowed,
+} from "./constants";
 import { getLatestVE, reloadFromVE } from "./events";
+import { properSelected } from "./selection";
 import {
   rollbackTransaction,
   startTransaction,
@@ -213,6 +222,19 @@ export const handleHotkeys = (
      */
     case "shift":
       if (!window.multiselect) window.multiselect = true;
+      break;
+
+    case "b":
+      const selected = properSelected(window.selectedItems);
+      if (selected.length !== 2 || !isSelectedType("DirectionalLight")) return;
+      let light: THREE.DirectionalLight, object: THREE.Object3D;
+      light = LightTypes.includes(selected[0].type)
+        ? (selected[0] as THREE.DirectionalLight)
+        : (selected[1] as THREE.DirectionalLight);
+      object = MeshyTypes.includes(selected[0].type)
+        ? (selected[0] as THREE.Object3D)
+        : (selected[1] as THREE.Object3D);
+      light.target = object;
       break;
   }
 };

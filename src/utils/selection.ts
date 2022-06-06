@@ -81,3 +81,13 @@ export const numSelected = (
 
   return actSelected.length;
 };
+
+export const properSelected = (
+  selectedItems: THREE.Object3D[] = window.selectedItems
+) => {
+  const actSelected = selectedItems.filter((x) =>
+    ViewportInteractionAllowed.includes(x.type)
+  );
+
+  return actSelected;
+};

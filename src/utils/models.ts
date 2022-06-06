@@ -8,6 +8,7 @@ import {
 } from "../enums";
 import * as THREE from "three";
 import { commitTransaction, startTransaction } from "./transactions";
+import { addAnimationStep } from "./animations";
 
 /**
  * This Page Keeps the Model Loaders,
@@ -297,11 +298,17 @@ export const loadLight = ({
     case Lights.directional: {
       light = new THREE.DirectionalLight(0xff0000, 60);
       window.scene.add(light);
-
-      const helper = new THREE.DirectionalLightHelper(
-        light as THREE.DirectionalLight,
-        1
+      const helper = new THREE.PointLightHelper(
+        light as THREE.PointLight,
+        1,
+        "#2e97ea"
       );
+      helper.type = "DirectionalLightHelper";
+      addAnimationStep(() => {
+        if ((light as THREE.DirectionalLight)?.target) {
+          light!.lookAt((light as THREE.DirectionalLight).target.position);
+        }
+      });
       window.scene.add(helper);
       break;
     }
@@ -309,8 +316,9 @@ export const loadLight = ({
       light = new THREE.HemisphereLight(0xffffbb, 0x080820, 1);
       const helper = new THREE.HemisphereLightHelper(
         light as THREE.HemisphereLight,
-        5
+        1, "#D87EBE"
       );
+      helper.type = "HemisphereLightHelper";
       window.scene.add(helper);
       break;
     }
@@ -325,9 +333,14 @@ export const loadLight = ({
     case Lights.spot: {
       light = new THREE.SpotLight(0xff0000, 60);
       window.scene.add(light);
-
-      const spotLightHelper = new THREE.SpotLightHelper(light);
-      window.scene.add(spotLightHelper);
+      const helper = new THREE.PointLightHelper(
+        light as THREE.PointLight,
+        1,
+        "#9859BF"
+      );
+      helper.type = "SpotLightHelper";
+      helper.scale.set(0.001, 0.001, 0.001);
+      window.scene.add(helper);
       break;
     }
   }

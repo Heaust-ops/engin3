@@ -48,6 +48,7 @@ export enum Lights {
   hemispehre = "HemisphereLight",
   point = "PointLight",
   spot = "SpotLight",
+  ambient = "AmbientLight",
 }
 
 export enum DriverType {

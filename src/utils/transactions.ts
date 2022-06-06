@@ -237,7 +237,9 @@ export const commitTransaction = () => {
     if (info) {
       addVE({ type, info });
     } else {
-      console.log(pendingTransaction);
+      /**
+       * Something went wrong
+       */
     }
   });
 
