@@ -46,8 +46,6 @@ const menus = {
   },
 };
 
-let eventHistoryBroomPoller: NodeJS.Timer;
-
 /**
  * The Outermost React Component
  */
