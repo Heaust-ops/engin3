@@ -9,6 +9,7 @@ import {
 import * as THREE from "three";
 import { commitTransaction, startTransaction } from "./transactions";
 import { addAnimationStep } from "./animations";
+import { randomColor } from "./utils";
 
 /**
  * This Page Keeps the Model Loaders,
@@ -141,6 +142,7 @@ export const loadPrimitive = ({
     mesh.position.set(...pos);
     mesh.rotation.set(...rotation);
     mesh.scale.set(...size);
+    mesh.name = modelPath + randomColor();
     preprocess(mesh);
     window.scene.add(mesh);
 
@@ -201,6 +203,7 @@ export const loadGLTFModel = ({
       });
       gltf.scene.position.set(...pos);
       gltf.scene.rotation.set(...rotation);
+      gltf.scene.name = "GLTFModel" + randomColor();
       preprocess(gltf.scene);
       window.scene.add(gltf.scene);
 
@@ -251,6 +254,7 @@ export const loadFBXModel = ({
       });
       fbx.position.set(...pos);
       fbx.rotation.set(...rotation);
+      fbx.name = "FBXModel" + randomColor();
       preprocess(fbx);
       window.scene.add(fbx);
 
@@ -355,6 +359,7 @@ export const loadLight = ({
     light.position.set(...pos);
     light.rotation.set(...rotation);
     light.scale.set(...size);
+    light.name = modelPath + randomColor();
     preprocess(light);
     window.scene.add(light);
 

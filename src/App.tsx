@@ -17,6 +17,7 @@ import {
   getMousePositionIn3D,
   getVector3Component,
   keepTrackOfCursor,
+  randomColor,
 } from "./utils/utils";
 import { ViewportInteractionAllowed } from "./utils/constants";
 import { handleHotkeys } from "./utils/viewportHotkeys";
@@ -24,6 +25,7 @@ import TransformsMenu from "./components/TransformsMenu/TransformsMenu";
 import { Vector3 } from "three";
 import { grab, rotate } from "./utils/transforms";
 import { numSelected } from "./utils/selection";
+import { coalesceVEHistory } from "./utils/memory";
 
 /**
  * Because Writing (ev) => ev.preventDefault();
@@ -44,6 +46,8 @@ const menus = {
   },
 };
 
+let eventHistoryBroomPoller: NodeJS.Timer;
+
 /**
  * The Outermost React Component
  */
@@ -51,6 +55,35 @@ const App = () => {
   const [keyStack, setkeyStack] = useState([] as KeyboardEvent["key"][]);
   const [mode, setmode] = useState(ViewportModes.navigate);
   const [selectedItemsCount, setselectedItemsCount] = useState(0);
+
+  /** Initializations on First Mount */
+  useEffect(() => {
+    /** Initialize the ThreeJs Scene */
+    viewportInit();
+
+    /** Keep track of the Cursor */
+    document.addEventListener("mousemove", keepTrackOfCursor, false);
+
+    /** We're handling drag and drop, don't let the browser do it. */
+    window.addEventListener("dragover", preventDefault, false);
+    window.addEventListener("drop", preventDefault, false);
+
+    /** Polling for high memory usage and cleaning up */
+    eventHistoryBroomPoller = setInterval(() => {
+      /** Coalesce first half of events if event history is large */
+      /** See memory.ts */
+      if (window.viewportEventHistory.length > 500)
+        coalesceVEHistory(window.viewportEventHistory.length / 2);
+    }, 60000 /** Every Minute */);
+
+    return () => {
+      // Cleanup
+      document.removeEventListener("mousemove", keepTrackOfCursor, false);
+      window.removeEventListener("dragover", preventDefault, false);
+      window.removeEventListener("drop", preventDefault, false);
+      if (eventHistoryBroomPoller) clearInterval(eventHistoryBroomPoller);
+    };
+  }, []);
 
   /**
    * Regulating Mode Changes & Implementing Mode Logic
@@ -177,26 +210,6 @@ const App = () => {
     };
   }, [keyStack]);
 
-  /** Initializations on First Mount */
-  useEffect(() => {
-    /** Initialize the ThreeJs Scene */
-    viewportInit();
-
-    /** Keep track of the Cursor */
-    document.addEventListener("mousemove", keepTrackOfCursor, false);
-
-    /** We're handling drag and drop, don't let the browser do it. */
-    window.addEventListener("dragover", preventDefault, false);
-    window.addEventListener("drop", preventDefault, false);
-
-    return () => {
-      // Cleanup
-      document.removeEventListener("mousemove", keepTrackOfCursor, false);
-      window.removeEventListener("dragover", preventDefault, false);
-      window.removeEventListener("drop", preventDefault, false);
-    };
-  }, []);
-
   return (
     <div className={`App ${styles.App}`}>
       {/* Header Menu */}
@@ -228,11 +241,32 @@ const App = () => {
             if (modelURL) {
               switch (model!.type) {
                 case "model/gltf-binary":
-                  loadGLTFModel({ modelPath: modelURL });
+                  loadGLTFModel({
+                    modelPath: modelURL,
+                    /**
+                     * Give the Model a good name
+                     */
+                    preprocess: (glb) => {
+                      const name = model!.name.split("/").pop()?.split(".")[0];
+                      if (name) glb.name = name + randomColor();
+                    },
+                  });
                   break;
                 case "":
                   if (model!.name.endsWith(".fbx"))
-                    loadFBXModel({ modelPath: modelURL });
+                    loadFBXModel({
+                      modelPath: modelURL,
+                      /**
+                       * Give the Model a good name
+                       */
+                      preprocess: (fbx) => {
+                        const name = model!.name
+                          .split("/")
+                          .pop()
+                          ?.split(".")[0];
+                        if (name) fbx.name = name + randomColor();
+                      },
+                    });
                   break;
               }
             }
