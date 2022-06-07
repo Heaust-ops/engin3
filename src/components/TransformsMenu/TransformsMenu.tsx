@@ -11,7 +11,24 @@ const TransformsMenu: FunctionComponent<TransformsMenuProps> = () => {
     "position" | "rotation" | "scale"
   >("position");
   return (
-    <div className={`${styles.Wrapper}`}>
+    <div
+      onWheel={(ev) => {
+        /**
+         * Scroll state that drivers rely upon.
+         *
+         * Putting this here as it's a safe space to test
+         * scroll, because scroll does nothing else here.
+         */
+        const direction =
+          Math.sign(ev.deltaY) < 0 ? 1 /** Scroll Up */ : -1; /** Scroll Down */
+
+        const tmpScrollY = window.scrolly - direction;
+        if (tmpScrollY >= 0 && tmpScrollY <= window.scrollyLimit)
+          window.scrolly = tmpScrollY;
+      }}
+
+      className={`${styles.Wrapper}`}
+    >
       <div className={`${styles.ArrowWrapper}`}>
         <ArrowRightIcon
           onClick={(ev) => {

@@ -55,6 +55,7 @@ export const viewportInit = (targetClass = "viewport") => {
     const near = 0.2;
     const far = 400.0;
     window.viewportCamera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+    window.defaultViewportCamera = window.viewportCamera;
     window.viewportCamera.position.set(10, 10, 10);
     window.viewportCamera.lookAt(0, 0, 0);
     window.controls = new OrbitControls(

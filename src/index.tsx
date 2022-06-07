@@ -26,7 +26,10 @@ declare global {
     controls: OrbitControls;
     defaultMaterial: Material;
     materials: Material[];
+    scrolly: number;
+    scrollyLimit: number;
     viewportCamera: THREE.PerspectiveCamera;
+    defaultViewportCamera: THREE.PerspectiveCamera;
     viewportEventHistory: ViewportEvent[];
     outlinePass: OutlinePass;
     pendingTransactions: PendingTransaction[];
@@ -44,6 +47,8 @@ window.viewportMode = ViewportModes.navigate;
 window.viewportEventHistory = [];
 window.animationStack = [];
 window.materials = [window.defaultMaterial];
+window.scrolly = 0;
+window.scrollyLimit = 100;
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
