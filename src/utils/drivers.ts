@@ -78,6 +78,8 @@ const [timed, timeS, timeD, timeM] = [time/100, time/1000, time/10000, time/6000
 export const testDriver = (expression: string) => `
 const own = 3;
 const te = 3;
+const [mx, my] = [ -1, -1];
+const [ndcx, ndcy] = [ -1, -1];
 ${DriverConstants}
 return(${expression});
 `;
@@ -130,6 +132,9 @@ const prepareDriver = (driver: Driver) => {
     const preparedExpression = `
         const own = ${driver.getter()};
         const te = ${timeElapsed};
+        const [mx, my] = [${window.mousePosition.x}, ${window.mousePosition.y}];
+        const [ndcx, ndcy] = 
+        [${window.ndcMousePosition.x}, ${window.ndcMousePosition.y}];
         ${DriverConstants}
         return(${driver.expression});
         `;

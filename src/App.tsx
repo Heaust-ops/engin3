@@ -72,7 +72,7 @@ const App = () => {
     eventHistoryBroomPoller = setInterval(() => {
       /** Coalesce first half of events if event history is large */
       /** See memory.ts */
-      if (window.viewportEventHistory.length > 500)
+      if (window.viewportEventHistory.length > 10000)
         coalesceVEHistory(window.viewportEventHistory.length / 2);
     }, 60000 /** Every Minute */);
 
