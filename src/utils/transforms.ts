@@ -1,6 +1,18 @@
 import { Vector3 } from "three";
 import { getVector3Component, doForSelectedItems } from "./utils";
 
+/**
+ * Moves an object in a specific direction
+ * @param delta Direction to move in
+ * @param factor the facotr by which to move, if a vector is given
+ * this operation
+ *
+ * factor.lengthSq() ^ (1/4)
+ *
+ * will convert it into scalar.
+ * @param keyStack The stack that handles hotkeys,
+ * Needed as holding shift does discrete steps.
+ */
 export const grab = (
   delta: THREE.Vector3 | [number, number, number],
   factor: THREE.Vector3 | number,
@@ -30,6 +42,11 @@ export const grab = (
   });
 };
 
+/**
+ * rotates an object in a specific direction
+ * @param delta Direction to rotate in
+ * @param factor the factor by which to rotate
+ */
 export const rotate = (
   delta: THREE.Vector3 | [number, number, number],
   factor: THREE.Vector3 | number
@@ -45,7 +62,7 @@ export const rotate = (
 
   const angularComp =
     typeof factor === "number"
-      ? 1
+      ? factor
       : -Math.abs(angularVector!.dot(componentVector));
 
   const axis = new Vector3(
