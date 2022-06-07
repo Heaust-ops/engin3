@@ -30,6 +30,11 @@ import { isType } from "./validity";
  *    the necessary information required to re-perform or
  *    undo it.
  *
+ * ** Note about Star and Commit Transaction,
+ *    They're  only for transactions that don't immediately
+ *    get commited, for transactions like that there's likely an
+ *    asTransaction param in the action function itself
+ *
  * - Rollback Transaction: Undo latest,
  *    Do not use when there are already transactions pending.
  *    Won't work anyway in that case as added safety.
