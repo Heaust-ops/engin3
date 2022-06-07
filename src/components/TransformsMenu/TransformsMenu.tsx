@@ -22,11 +22,15 @@ const TransformsMenu: FunctionComponent<TransformsMenuProps> = () => {
         const direction =
           Math.sign(ev.deltaY) < 0 ? 1 /** Scroll Up */ : -1; /** Scroll Down */
 
+        /** Manage Rotating Scroll */
+        window.scrollRotatey =
+          (window.scrollRotatey - direction) % window.scrollRotateyLimit;
+
+        /** Manage Linear Scroll */
         const tmpScrollY = window.scrolly - direction;
         if (tmpScrollY >= 0 && tmpScrollY <= window.scrollyLimit)
           window.scrolly = tmpScrollY;
       }}
-
       className={`${styles.Wrapper}`}
     >
       <div className={`${styles.ArrowWrapper}`}>

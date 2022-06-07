@@ -65,7 +65,11 @@ export interface DriverRecord {
 
 const DriverConstants = `
 const sgm = (z) => (1 / (1 + Math.exp(-z)));
-const sy = window.scrolly;
+
+const [sy, sylim] = [window.scrolly, window.scrollyLimit];
+const [syr, syrlim] = [window.scrollRotatey, window.scrollRotateyLimit];
+const [nsy, nsyr] = [sy / sylim, syr / syrlim];
+
 const [sign, pow, sq, abs] = [Math.sign, Math.pow, (x)=>Math.pow(x, 2), Math.abs];
 const [sin, cos, tan, pi, time] = [Math.sin, Math.cos, Math.tan, Math.PI, + new Date()];
 const [timed, timeS, timeD, timeM] = [time/100, time/1000, time/10000, time/60000];

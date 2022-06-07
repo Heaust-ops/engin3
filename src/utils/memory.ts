@@ -15,7 +15,7 @@ import { DriverInfo, ViewportEvent } from "./events";
  * performed on it before deletion are unnecessary.
  *
  * The tradeoff is we can't step-by-step undo the events we lose,
- * however this trade-off makes sense as undoing beyond a 200 (say) steps
+ * however this trade-off makes sense as undoing beyond 5000 (say) steps
  * is uncommon
  *
  * @param length length of the history to coalesce
