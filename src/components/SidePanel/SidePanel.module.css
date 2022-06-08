@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Kdam+Thmor+Pro&display=swap');
+
 .sidePanel {
   height: 100%;
   flex: 3rem;
@@ -20,6 +22,7 @@
   height: calc(70% - 1px);
   border-top: 1px solid #444;
   display: flex;
+  background-color: #1e1e1e;
 }
 
 .iconTab {
@@ -32,7 +35,6 @@
   transition: 0.5s;
   opacity: 0;
   pointer-events: none;
-  background-color: #1e1e1e;
 }
 
 .sidePanel:hover .propertyTab {
@@ -63,4 +65,22 @@
 .iconWrapper:active {
   filter: brightness(2);
   cursor: pointer;
+}
+
+.propertyTabHeader {
+  display: none;
+  width: none;
+  font-family: 'Kdam Thmor Pro', sans-serif;
+}
+
+.sidePanel:hover .propertyTab .propertyTabHeader {
+  opacity: 1;
+  display: block;
+  color: #ccc;
+  position: absolute;
+  padding-left: 2rem;
+}
+
+.propertyTabHeader::first-letter {
+  text-transform: capitalize;
 }
