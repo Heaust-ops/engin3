@@ -29,7 +29,7 @@ const SidePanel: FunctionComponent<SidePanelProps> = () => {
           ))}
         </div>
         <div className={`${styles.propertyTab}`}>
-          <h2 className={`${styles.propertyTabHeader}`}>
+          <h2 className={`${styles.propertyTabHeader} unselectable`}>
             {`${selectedPropertyTab}${
               selectedPropertyTab.endsWith("s") ? "" : " Properties"
             }`}
