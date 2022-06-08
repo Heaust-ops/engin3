@@ -8,18 +8,18 @@
   gap: 1px;
   background-color: #000;
   grid-template-areas:
-    "header header header header header header header"
-    "view view view view view side side"
-    "view view view view view side side"
-    "view view view view view side side"
-    "view view view view view side side"
-    "view view view view view side side"
-    "view view view view view side side"
-    "view view view view view side side"
-    "view view view view view side side"
-    "view view view view view side side"
-    "view view view view view side side"
-    "view view view view view side side";
+    "header"
+    "main"
+    "main"
+    "main"
+    "main"
+    "main"
+    "main"
+    "main"
+    "main"
+    "main"
+    "main"
+    "main";
 }
 
 .headerMenu {
@@ -27,9 +27,17 @@
   background-color: #222;
 }
 
+.Main {
+  grid-area: main;
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
 .viewportWrapper {
-  z-index: 0;
-  grid-area: view;
+  z-index: 1;
+  flex: calc(100vw - 3rem);
+  height: 100%;
   background-color: #222;
 }
 
@@ -37,9 +45,4 @@
   z-index: 1;
   width: 100%;
   height: 100%;
-}
-
-.sidePanel {
-  grid-area: side;
-  background-color: #222;
 }

@@ -15,6 +15,16 @@ export enum WorkingAxes {
   all = "all",
 }
 
+export enum ViewportSidePanelTabs {
+  world = "world",
+  object = "object",
+  material = "material",
+  light = "light",
+  drivers = "drivers",
+  sequences = "sequences",
+  states = "states",
+}
+
 export enum MeshLoadMethod {
   loadPrimitive = "loadPrimitive",
   loadPrimitiveBuffer = "loadPrimitiveBuffer",

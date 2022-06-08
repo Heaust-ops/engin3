@@ -1,0 +1,66 @@
+.sidePanel {
+  height: 100%;
+  flex: 3rem;
+  z-index: 2;
+  background-color: #222;
+  transition: 0.5s;
+  border-left: 2px solid #444;
+}
+
+.sidePanel:hover {
+  flex: 40rem;
+}
+
+.objectList {
+  height: calc(30% - 1px);
+  border-bottom: 1px solid #444;
+}
+
+.properties {
+  height: calc(70% - 1px);
+  border-top: 1px solid #444;
+  display: flex;
+}
+
+.iconTab {
+  width: 3rem;
+  background-color: #1e1e1e;
+}
+
+.propertyTab {
+  width: 0;
+  transition: 0.5s;
+  opacity: 0;
+  pointer-events: none;
+  background-color: #1e1e1e;
+}
+
+.sidePanel:hover .propertyTab {
+  width: 100%;
+  opacity: 1;
+  display: block;
+  pointer-events: auto;
+}
+
+.iconWrapper {
+  width: 100%;
+  padding-top: 0.9rem;
+  padding-bottom: 0.9rem;
+  margin-top: 0.6rem;
+  margin-bottom: 0.6rem;
+  border-radius: 3px;
+  display: flex;
+  justify-content: center;
+  background-color: #111;
+}
+
+.iconWrapper:hover {
+  filter: brightness(1.2);
+  cursor: pointer;
+  background-color: #333;
+}
+
+.iconWrapper:active {
+  filter: brightness(2);
+  cursor: pointer;
+}
