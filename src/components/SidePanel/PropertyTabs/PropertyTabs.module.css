@@ -1,0 +1,4 @@
+.PropContainer {
+  display: flex;
+  justify-content: space-around;
+}

@@ -13,6 +13,7 @@ import { PendingTransaction } from "./utils/transactions";
 declare global {
   interface Window {
     scene: THREE.Scene /** The threejs scene we're working with */;
+    ambientLight: THREE.AmbientLight;
     selectedItems: THREE.Object3D[] /** Currently selected Items */;
     mousePosition: MousePosition /** Current Mouse Position */;
     ndcMousePosition: MousePosition /** Normalised Device Co-ordinates (mouse position) */;

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Kdam+Thmor+Pro&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Kdam+Thmor+Pro&display=swap");
 
 .sidePanel {
   height: 100%;
@@ -67,13 +67,15 @@
   cursor: pointer;
 }
 
-.propertyTabHeader {
+.propertyTabHeader,
+.propertyTabContent {
   display: none;
   width: none;
-  font-family: 'Kdam Thmor Pro', sans-serif;
+  font-family: "Kdam Thmor Pro", sans-serif;
 }
 
-.sidePanel:hover .propertyTab .propertyTabHeader {
+.sidePanel:hover .propertyTab .propertyTabHeader,
+.sidePanel:hover .propertyTab .propertyTabContent {
   opacity: 1;
   display: block;
   color: #ccc;
@@ -83,4 +85,8 @@
 
 .propertyTabHeader::first-letter {
   text-transform: capitalize;
+}
+
+.propertyTabContent {
+  margin-top: 5rem;
 }

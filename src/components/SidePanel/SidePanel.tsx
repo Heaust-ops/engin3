@@ -1,6 +1,7 @@
 import { FunctionComponent, useState } from "react";
 import { ViewportSidePanelTabs } from "../../enums";
 import GetIcon from "./Icons";
+import WorldProperties from "./PropertyTabs/WorldProperties/WorldProperties";
 import styles from "./SidePanel.module.css";
 
 interface SidePanelProps {}
@@ -33,6 +34,13 @@ const SidePanel: FunctionComponent<SidePanelProps> = () => {
               selectedPropertyTab.endsWith("s") ? "" : " Properties"
             }`}
           </h2>
+          <div className={`${styles.propertyTabContent}`}>
+            {
+              {
+                [ViewportSidePanelTabs.world]: <WorldProperties />,
+              }[selectedPropertyTab as string]
+            }
+          </div>
         </div>
       </div>
     </div>

@@ -46,8 +46,8 @@ export const viewportInit = (targetClass = "viewport") => {
     renderer.domElement.style.zIndex = "1";
 
     target[0].appendChild(renderer.domElement);
-    const ambientLight = new THREE.AmbientLight(0xffffff, 2);
-    scene.add(ambientLight);
+    window.ambientLight = new THREE.AmbientLight(0xffffff, 2);
+    scene.add(window.ambientLight);
 
     // Camera Setup
     const aspect = Cwidth() / Cheight();
@@ -129,15 +129,6 @@ export const viewportInit = (targetClass = "viewport") => {
       new THREE.Color("#454545")
     );
     scene.add(gridHelper);
-
-    // Add Point Light
-    const light = new THREE.PointLight(
-      0xffffff /* Color */,
-      30 /* Intensity */,
-      100 /* Maximum Range of Light */
-    );
-    light.position.set(30, 30, 30);
-    scene.add(light);
 
     // Post Processing
     const composer = new EffectComposer(renderer); // make composer
