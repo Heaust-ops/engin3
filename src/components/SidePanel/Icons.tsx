@@ -6,6 +6,7 @@ import LightbulbCircleIcon from "@mui/icons-material/LightbulbCircle";
 import HandymanIcon from "@mui/icons-material/Handyman";
 import AnimationIcon from "@mui/icons-material/Animation";
 import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
+import VideoCameraBackIcon from "@mui/icons-material/VideoCameraBack";
 
 const GetIcon = (arg: ViewportSidePanelTabs) => {
   switch (arg) {
@@ -32,6 +33,11 @@ const GetIcon = (arg: ViewportSidePanelTabs) => {
     case ViewportSidePanelTabs.states:
       return (
         <ConfirmationNumberIcon style={{ color: "#62B9D1", width: "4rem" }} />
+      );
+
+    case ViewportSidePanelTabs.camera:
+      return (
+        <VideoCameraBackIcon style={{ color: "#e0bc58", width: "4rem" }} />
       );
   }
 };

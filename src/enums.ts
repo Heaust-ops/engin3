@@ -23,6 +23,7 @@ export enum ViewportSidePanelTabs {
   drivers = "drivers",
   sequences = "sequences",
   states = "states",
+  camera = "camera",
 }
 
 export enum MeshLoadMethod {
