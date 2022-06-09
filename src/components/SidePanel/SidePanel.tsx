@@ -1,6 +1,5 @@
 import { FunctionComponent, useState } from "react";
 import { ViewportSidePanelTabs } from "../../enums";
-import { AllViewportSidePanelTabs } from "../../utils/constants";
 import GetIcon from "./Icons";
 import styles from "./SidePanel.module.css";
 
@@ -15,7 +14,7 @@ const SidePanel: FunctionComponent<SidePanelProps> = () => {
       <div className={`${styles.objectList}`}></div>
       <div className={`${styles.properties}`}>
         <div className={`${styles.iconTab}`}>
-          {AllViewportSidePanelTabs.map((tab, index) => (
+          {Object.values(ViewportSidePanelTabs).map((tab, index) => (
             <div
               onClick={() => setselectedPropertyTab(tab)}
               key={index}
