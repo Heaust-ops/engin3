@@ -28,7 +28,7 @@ const WorldProperties: FunctionComponent<WorldPropertiesProps> = () => {
   return (
     <>
       <h3>Ambient Light:</h3>
-      <div className={`${baseStyles}`}>
+      <div className={`${baseStyles.propContainer}`}>
         <h4>Intensity:</h4>{" "}
         {ambientLightLoaded && (
           <NumericSliderInput
