@@ -1,0 +1,30 @@
+.input {
+  transition: 0.3s;
+  outline: none;
+  border-radius: 0.3rem;
+  font-size: 1.2rem;
+  color: #ccc;
+  border: none;
+  padding: 0.5rem;
+  max-width: 10rem;
+  text-align: center;
+  margin: 0.5rem;
+  background-color: #1e1e1e;
+}
+
+.button {
+  color: #ccc;
+  background-color: #1e1e1e;
+  border-radius: 0.3rem;
+  cursor: pointer;
+  vertical-align: center;
+  outline: none;
+  border: none;
+}
+
+.wrapper {
+  width: 10rem;
+  padding-left: 1.6rem;
+  display: flex;
+  align-items: center;
+}

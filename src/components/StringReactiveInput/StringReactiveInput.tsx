@@ -1,6 +1,5 @@
 import { FunctionComponent, HTMLAttributes, useEffect, useState } from "react";
-import styles from "./NumericSliderInput.module.css";
-import ArrowRightIcon from "@material-ui/icons/ArrowRight";
+import styles from "./StringReactiveInput.module.css";
 import { isSyntaxOk } from "../../utils/validity";
 import {
   applyDriver,
@@ -11,9 +10,9 @@ import {
 } from "../../utils/drivers";
 import { DriverType } from "../../enums";
 
-interface NumericSliderInputProps extends HTMLAttributes<HTMLDivElement> {
-  getter: () => number;
-  setter: (arg: number, asTransaction: boolean) => void;
+interface StringReactiveInputProps extends HTMLAttributes<HTMLDivElement> {
+  getter: () => string;
+  setter: (arg: string, asTransaction: boolean) => void;
   objectId: number;
   property: string;
   toUpdate?: boolean;
@@ -26,7 +25,7 @@ enum SyntaxBackground {
 
 const getDriverExpression = (arg: string) => arg.substring(1);
 
-const NumericSliderInput: FunctionComponent<NumericSliderInputProps> = ({
+const StringReactiveInput: FunctionComponent<StringReactiveInputProps> = ({
   getter,
   setter,
   objectId,
@@ -65,7 +64,7 @@ const NumericSliderInput: FunctionComponent<NumericSliderInputProps> = ({
       return;
     }
 
-    const syntaxFlag = isSyntaxOk(expression, ["number"]);
+    const syntaxFlag = isSyntaxOk(expression, ["string"]);
     setsyntaxOk(syntaxFlag);
     if (!syntaxFlag) return;
 
@@ -76,10 +75,10 @@ const NumericSliderInput: FunctionComponent<NumericSliderInputProps> = ({
       objectID: objectId,
       property,
       expression,
-      type: DriverType.numeric,
+      type: DriverType.string,
       animationId: driverAnimationId(objectId, property),
       getter,
-      setter: (arg: number) => {
+      setter: (arg: string) => {
         setter(arg, false);
       },
     } as Driver;
@@ -111,24 +110,6 @@ const NumericSliderInput: FunctionComponent<NumericSliderInputProps> = ({
 
   return (
     <div {...props} className={`${styles.wrapper}`}>
-      {/**
-       * Decrease
-       */}
-      <button
-        className={`${styles.button}`}
-        onClick={() => {
-          if (!isDriven) setter(getter() - 0.5, true);
-        }}
-      >
-        <ArrowRightIcon
-          style={{
-            width: "1.8rem",
-            height: "1.8rem",
-            transform: "rotate(180deg)",
-          }}
-        />
-      </button>
-
       {/**
        * Change
        */}
@@ -163,30 +144,13 @@ const NumericSliderInput: FunctionComponent<NumericSliderInputProps> = ({
               setvalue("$");
               return;
             }
-            const parsedValue = parseFloat(targetValue);
-            setter(parsedValue ? parsedValue : getter(), true);
+            const parsedValue = `${targetValue}`;
+            setter(targetValue ? parsedValue : getter(), true);
           }
         }}
       />
-
-      {/**
-       * Increase
-       */}
-      <button
-        className={`${styles.button}`}
-        onClick={() => {
-          if (!isDriven) setter(getter() + 0.5, true);
-        }}
-      >
-        <ArrowRightIcon
-          style={{
-            width: "1.8rem",
-            height: "1.8rem",
-          }}
-        />
-      </button>
     </div>
   );
 };
 
-export default NumericSliderInput;
+export default StringReactiveInput;

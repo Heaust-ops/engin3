@@ -1,7 +1,7 @@
 import { FunctionComponent, useEffect, useState } from "react";
 import { ViewportEventType } from "../../enums";
 import { commitTransaction, startTransaction } from "../../utils/transactions";
-import NumericSliderInput from "../NumericSliderInput/NumericSliderInput";
+import NumericReactiveInput from "../NumericReactiveInput/NumericReactiveInput";
 
 interface TransformPropertyMenuProps {
   isHidden: boolean;
@@ -44,7 +44,7 @@ const TransformPropertyMenu: FunctionComponent<TransformPropertyMenuProps> = ({
       >
         X:
       </h3>
-      <NumericSliderInput
+      <NumericReactiveInput
         property={`${property}.x`}
         style={{
           ...(isHidden
@@ -72,7 +72,7 @@ const TransformPropertyMenu: FunctionComponent<TransformPropertyMenuProps> = ({
       >
         Y:
       </h3>
-      <NumericSliderInput
+      <NumericReactiveInput
         property={`${property}.y`}
         style={{
           ...(isHidden
@@ -100,7 +100,7 @@ const TransformPropertyMenu: FunctionComponent<TransformPropertyMenuProps> = ({
       >
         Z:
       </h3>
-      <NumericSliderInput
+      <NumericReactiveInput
         property={`${property}.z`}
         style={{
           ...(isHidden

@@ -1,5 +1,5 @@
 import { FunctionComponent, useEffect, useState } from "react";
-import NumericSliderInput from "../../../NumericSliderInput/NumericSliderInput";
+import NumericReactiveInput from "../../../NumericReactiveInput/NumericReactiveInput";
 import baseStyles from "../PropertyTabs.module.css";
 
 interface WorldPropertiesProps {}
@@ -31,7 +31,7 @@ const WorldProperties: FunctionComponent<WorldPropertiesProps> = () => {
       <div className={`${baseStyles.propContainer}`}>
         <h4>Intensity:</h4>{" "}
         {ambientLightLoaded && (
-          <NumericSliderInput
+          <NumericReactiveInput
             getter={() => window.ambientLight.intensity}
             setter={(arg) => {
               window.ambientLight.intensity = arg;
