@@ -32,6 +32,7 @@ export enum MeshLoadMethod {
   loadGLTF = "loadGLTF",
   loadFBX = "loadFBX",
   loadLight = "loadLight",
+  loadCamera = "loadCamera",
 }
 
 export enum ViewportEventType {
@@ -63,8 +64,8 @@ export enum Lights {
 }
 
 export enum Cameras {
-  perspective = "perspective",
-  orthographic = "orthographic",
+  perspective = "PerspectiveCamera",
+  orthographic = "OrthographicCamera",
 }
 
 export enum DriverType {

@@ -1,5 +1,6 @@
 import { ViewportModes, ViewportEventType, WorkingAxes } from "../enums";
 import {
+  CameraTypes,
   LightTypes,
   MeshyTypes,
   ViewportInteractionAllowed,
@@ -264,6 +265,21 @@ export const handleHotkeys = (
       if (selected.length === 1 && selected[0].type === "Group") {
         unmakeGroup(selected[0] as THREE.Group);
       }
+
+      /**
+       * Camera binding, changing
+       */
+      if (selected.length === 1 && CameraTypes.includes(selected[0].type)) {
+        if (window.viewportCamera.id === selected[0].id)
+          window.viewportCamera = window.defaultViewportCamera;
+        else window.viewportCamera = selected[0] as THREE.PerspectiveCamera;
+      }
+
+      if (
+        !selected.length &&
+        window.viewportCamera.id !== window.defaultViewportCamera.id
+      )
+        window.viewportCamera = window.defaultViewportCamera;
 
       break;
   }

@@ -15,12 +15,16 @@ export const highlightObjects = (args: THREE.Object3D[]) => {
 
 /**
  * Selects 3D Object(s) programmatically
+ * 
+ * Strict mode means unselect everything not in the list provided
+ * 
  * @param arg The 3D Object to Select
  */
 export const selectObject3D = (
   arg: THREE.Object3D | THREE.Object3D[] | null,
   strict = false
 ) => {
+  /** For no valid arguments with strict mode, unselect all */
   if (
     arg === null ||
     (arg instanceof Array && arg.length === 0) ||
@@ -36,6 +40,7 @@ export const selectObject3D = (
 
   if (!(arg instanceof Array)) arg = [arg];
 
+  /** also consider helpers */
   arg.forEach((item) => {
     if (TypesThatNeedHelpers.includes(item.type)) {
       const helper = getHelper(item);
@@ -59,6 +64,15 @@ export const selectObject3D = (
  */
 export const unselectObject3D = (args: THREE.Object3D[] | THREE.Object3D) => {
   if (!(args instanceof Array)) args = [args];
+  /** If an object has a helper, we need to unselect it too */
+  let helpers = [] as THREE.Object3D[];
+  args.forEach((arg) => {
+    const helper = getHelper(arg);
+    if (helper) helpers.push(helper);
+  });
+  args = [...args, ...helpers];
+
+  /** Removing from selected and outlined */
   args.forEach((arg) => {
     if (!window.selectedItems) return;
     const findIndex0 = window.selectedItems.findIndex((a) => a.id === arg.id);

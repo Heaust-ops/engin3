@@ -1,6 +1,7 @@
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import {
+  Cameras,
   Lights,
   MeshLoadMethod,
   Primitives,
@@ -381,6 +382,80 @@ export const loadLight = ({
 };
 
 /**
+ * Model Loader For Lights
+ */
+export const loadCamera = ({
+  modelPath,
+  pos = [0, 0, 0],
+  rotation = [0, 0, 0],
+  size = 1,
+  preprocess = (/* Mesh */) => {},
+  buffer = false,
+  asTransaction = true,
+}: {
+  modelPath?: string;
+  pos?: [number, number, number];
+  rotation?: [number, number, number];
+  size?: number | [number, number, number];
+  preprocess?: (arg: THREE.Object3D) => void;
+  buffer?: boolean;
+  asTransaction?: boolean;
+} = {}) => {
+  if (!modelPath) return;
+  let camera: THREE.Camera | null = null;
+  const Cwidth = () => {
+    return document.getElementsByClassName("viewport")[0].clientWidth;
+  };
+  const Cheight = () => {
+    return document.getElementsByClassName("viewport")[0].clientHeight;
+  };
+  switch (modelPath) {
+    case Cameras.perspective:
+      camera = new THREE.PerspectiveCamera(75, Cwidth() / Cheight(), 0.1, 1000);
+      const persprectiveHelper = new THREE.CameraHelper(camera);
+      window.scene.add(persprectiveHelper);
+      break;
+    case Cameras.orthographic:
+      camera = new THREE.OrthographicCamera(
+        Cwidth() / -2,
+        Cwidth() / 2,
+        Cheight() / 2,
+        Cheight() / -2,
+        1,
+        1000
+      );
+      const orthographicHelper = new THREE.CameraHelper(camera);
+      window.scene.add(orthographicHelper);
+      break;
+  }
+
+  if (camera) {
+    if (!(size instanceof Array)) size = [size, size, size];
+    camera.position.set(...pos);
+    camera.rotation.set(...rotation);
+    camera.scale.set(...size);
+    camera.name = modelPath + randomColor();
+    preprocess(camera);
+    window.scene.add(camera);
+
+    // Record Transaction
+    if (asTransaction) {
+      startTransaction(ViewportEventType.loadMesh);
+      const pendingMeshTransaction = {
+        type: ViewportEventType.loadMesh,
+        objectID: camera.id,
+        initials: {
+          path: modelPath,
+          method: MeshLoadMethod.loadCamera,
+        },
+      };
+      window.pendingTransactions.push(pendingMeshTransaction);
+      commitTransaction();
+    }
+  }
+};
+
+/**
  * Used to get a Specific Model Loader
  * @param loadMethod The Method of Loading
  * @returns The appropriate loader that uses the given method to load
@@ -391,6 +466,7 @@ export const getLoader = (loadMethod: MeshLoadMethod) => {
     [MeshLoadMethod.loadGLTF]: loadGLTFModel,
     [MeshLoadMethod.loadPrimitive]: loadPrimitive,
     [MeshLoadMethod.loadLight]: loadLight,
+    [MeshLoadMethod.loadCamera]: loadCamera,
     [MeshLoadMethod.loadPrimitiveBuffer]: (arg: {
       modelPath?: string;
       pos?: [number, number, number];

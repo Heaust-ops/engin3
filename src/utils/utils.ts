@@ -62,7 +62,7 @@ export const keepTrackOfCursor = (mouseMoveEvent: MouseEvent) => {
  * @returns The helper of the object if it has one
  */
 export const getHelper = (arg: THREE.Object3D) => {
-  let helper: THREE.PointLightHelper | null = null;
+  let helper: THREE.PointLightHelper | THREE.CameraHelper | null = null;
   if (arg.type.includes("Light")) {
     window.scene.traverse((item) => {
       if (
@@ -70,6 +70,16 @@ export const getHelper = (arg: THREE.Object3D) => {
         (item as THREE.PointLightHelper).light.id === arg.id
       )
         helper = item as THREE.PointLightHelper;
+    });
+  }
+
+  if (arg.type.includes("Camera")) {
+    window.scene.traverse((item) => {
+      if (
+        item.type.includes("CameraHelper") &&
+        (item as THREE.CameraHelper).camera.id === arg.id
+      )
+        helper = item as THREE.CameraHelper;
     });
   }
 

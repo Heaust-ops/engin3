@@ -152,14 +152,15 @@ export const viewportInit = (targetClass = "viewport") => {
         CheckRC(
           window.viewportCamera,
           (intersects: THREE.Intersection[]) => {
-            // This is to avoid selecting helpers
+            // This is to avoid selecting Axes and Grid helpers
             let selectedMeshIndex = 0;
             for (let i = 0; i < intersects.length; i++)
               if (
                 ["Mesh", "Group", "SkinnedMesh"].includes(
                   intersects[i].object.type
                 ) ||
-                intersects[i].object.type.includes("LightHelper")
+                intersects[i].object.type.includes("LightHelper") ||
+                intersects[i].object.type.includes("CameraHelper")
               ) {
                 selectedMeshIndex = i;
               }
@@ -177,6 +178,11 @@ export const viewportInit = (targetClass = "viewport") => {
             // Actually select the Lights if selected helper
             if ((selectedItem as THREE.PointLightHelper)?.light) {
               selectedItem = (selectedItem as THREE.PointLightHelper).light;
+            }
+
+            // Actually select the Camera if selected helper
+            if ((selectedItem as THREE.CameraHelper)?.camera) {
+              selectedItem = (selectedItem as THREE.CameraHelper).camera;
             }
 
             let itemAlreadySelected = false;
