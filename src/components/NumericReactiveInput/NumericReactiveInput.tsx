@@ -15,6 +15,7 @@ interface NumericReactiveInputProps extends HTMLAttributes<HTMLDivElement> {
   getter: () => number;
   setter: (arg: number, asTransaction: boolean) => void;
   objectId: number;
+  step?: number;
   property: string;
   toUpdate?: boolean;
 }
@@ -32,6 +33,7 @@ const NumericReactiveInput: FunctionComponent<NumericReactiveInputProps> = ({
   objectId,
   property,
   toUpdate = true,
+  step = 0.5,
   ...props
 }) => {
   const [value, setvalue] = useState(`${getter()}`);
@@ -117,7 +119,7 @@ const NumericReactiveInput: FunctionComponent<NumericReactiveInputProps> = ({
       <button
         className={`${styles.button}`}
         onClick={() => {
-          if (!isDriven) setter(getter() - 0.5, true);
+          if (!isDriven) setter(getter() - step, true);
         }}
       >
         <ArrowRightIcon
@@ -175,7 +177,7 @@ const NumericReactiveInput: FunctionComponent<NumericReactiveInputProps> = ({
       <button
         className={`${styles.button}`}
         onClick={() => {
-          if (!isDriven) setter(getter() + 0.5, true);
+          if (!isDriven) setter(getter() + step, true);
         }}
       >
         <ArrowRightIcon
