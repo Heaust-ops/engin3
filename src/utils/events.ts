@@ -1,5 +1,5 @@
 import { DriverType, MeshLoadMethod, ViewportEventType } from "../enums";
-import { getLoader } from "./models";
+import { getLoader } from "./loaders";
 import {
   commitTransaction,
   removeMesh,

@@ -1,4 +1,4 @@
-import { loadPrimitive } from "../../utils/models";
+import { loadPrimitive } from "../../utils/loaders";
 
 const primitiveBufferSubmenu = [
   {

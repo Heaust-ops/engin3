@@ -11,7 +11,7 @@ import {
   rollbackTransaction,
   startTransaction,
 } from "./utils/transactions";
-import { loadFBXModel, loadGLTFModel } from "./utils/models";
+import { loadFBXModel, loadGLTFModel } from "./utils/loaders";
 import {
   doForSelectedItems,
   getMousePositionIn3D,

@@ -62,6 +62,11 @@ export enum Lights {
   ambient = "AmbientLight",
 }
 
+export enum Cameras {
+  perspective = "perspective",
+  orthographic = "orthographic",
+}
+
 export enum DriverType {
   numeric = "numeric",
   string = "string",

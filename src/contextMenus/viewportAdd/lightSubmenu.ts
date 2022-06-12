@@ -1,5 +1,5 @@
 import { Lights } from "../../enums";
-import { loadLight } from "../../utils/models";
+import { loadLight } from "../../utils/loaders";
 
 const lightSubmenu = [
   {
