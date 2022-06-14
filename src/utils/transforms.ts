@@ -1,4 +1,5 @@
 import { Vector3 } from "three";
+import { WorkingAxes } from "../enums";
 import { getVector3Component, doForSelectedItems } from "./utils";
 
 /**
@@ -16,10 +17,11 @@ import { getVector3Component, doForSelectedItems } from "./utils";
 export const grab = (
   delta: THREE.Vector3 | [number, number, number],
   factor: THREE.Vector3 | number,
+  workingAxis: WorkingAxes,
   keyStack?: string[]
 ) => {
   if (delta instanceof Array) delta = new Vector3(...delta);
-  const translateComponent = getVector3Component(delta, window.workingAxis);
+  const translateComponent = getVector3Component(delta, workingAxis);
   if (typeof factor === "number") translateComponent.normalize();
   const shift = translateComponent.multiplyScalar(
     typeof factor === "number" ? factor : Math.pow(factor.lengthSq(), 1 / 4)
@@ -49,12 +51,13 @@ export const grab = (
  */
 export const rotate = (
   delta: THREE.Vector3 | [number, number, number],
-  factor: THREE.Vector3 | number
+  factor: THREE.Vector3 | number,
+  workingAxis: WorkingAxes
 ) => {
   if (delta instanceof Array) delta = new Vector3(...delta);
   const componentVector = getVector3Component(
     new Vector3(1, 1, 1),
-    window.workingAxis
+    workingAxis
   );
 
   const angularVector =

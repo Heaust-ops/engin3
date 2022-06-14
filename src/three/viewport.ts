@@ -34,6 +34,10 @@ export const setViewportCamera = (arg: THREE.Camera) => {
 
 export let outlinePass: OutlinePass;
 
+export const viewportMode = {
+  value: ViewportModes.navigate,
+};
+
 export let controls: OrbitControls;
 
 let previousRAF: number;
@@ -169,7 +173,7 @@ export const viewportInit = (targetClass = viewportDivClassName) => {
      * Start a Click Job to Select Items
      */
     renderer.domElement.onmousedown = (ev) => {
-      if (ev.button === 0 && window.viewportMode === ViewportModes.navigate) {
+      if (ev.button === 0 && viewportMode.value === ViewportModes.navigate) {
         // Only Select on Left Click and on Navigation mode
         CheckRC(
           viewportCamera,

@@ -3,6 +3,7 @@ import {
   defaultViewportCamera,
   getViewportCamera,
   setViewportCamera,
+  viewportMode,
 } from "../three/viewport";
 import {
   CameraTypes,
@@ -34,7 +35,8 @@ import { isSelectedType } from "./validity";
  */
 export const handleHotkeys = (
   hotkeyStack: KeyboardEvent["key"][],
-  setmode: (arg: ViewportModes) => void
+  setmode: (arg: ViewportModes) => void,
+  workingAxis: { get: WorkingAxes; set: (arg: WorkingAxes) => void }
 ) => {
   /**
    * Reset All the Values we only want
@@ -69,7 +71,7 @@ export const handleHotkeys = (
      *
      */
     case "x":
-      if (window.viewportMode === ViewportModes.navigate) {
+      if (viewportMode.value === ViewportModes.navigate) {
         /**
          * Delete
          */
@@ -81,9 +83,9 @@ export const handleHotkeys = (
           ViewportModes.grab,
           ViewportModes.rotate,
           ViewportModes.scale,
-        ].includes(window.viewportMode)
+        ].includes(viewportMode.value)
       )
-        window.workingAxis = WorkingAxes.x; // Change Working Axis
+        workingAxis.set(WorkingAxes.x); // Change Working Axis
       break;
 
     /**
@@ -98,9 +100,9 @@ export const handleHotkeys = (
           ViewportModes.grab,
           ViewportModes.rotate,
           ViewportModes.scale,
-        ].includes(window.viewportMode)
+        ].includes(viewportMode.value)
       )
-        window.workingAxis = WorkingAxes.y;
+        workingAxis.set(WorkingAxes.y);
       break;
 
     /**
@@ -115,9 +117,9 @@ export const handleHotkeys = (
           ViewportModes.grab,
           ViewportModes.rotate,
           ViewportModes.scale,
-        ].includes(window.viewportMode)
+        ].includes(viewportMode.value)
       )
-        window.workingAxis = WorkingAxes.z;
+        workingAxis.set(WorkingAxes.z);
       break;
 
     /**
@@ -132,9 +134,9 @@ export const handleHotkeys = (
           ViewportModes.grab,
           ViewportModes.rotate,
           ViewportModes.scale,
-        ].includes(window.viewportMode)
+        ].includes(viewportMode.value)
       )
-        window.workingAxis = WorkingAxes.notx;
+        workingAxis.set(WorkingAxes.notx);
       break;
 
     /**
@@ -149,9 +151,9 @@ export const handleHotkeys = (
           ViewportModes.grab,
           ViewportModes.rotate,
           ViewportModes.scale,
-        ].includes(window.viewportMode)
+        ].includes(viewportMode.value)
       )
-        window.workingAxis = WorkingAxes.noty;
+        workingAxis.set(WorkingAxes.noty);
       break;
 
     /**
@@ -166,9 +168,9 @@ export const handleHotkeys = (
           ViewportModes.grab,
           ViewportModes.rotate,
           ViewportModes.scale,
-        ].includes(window.viewportMode)
+        ].includes(viewportMode.value)
       )
-        window.workingAxis = WorkingAxes.notz;
+        workingAxis.set(WorkingAxes.notz);
       break;
 
     /**
@@ -178,7 +180,7 @@ export const handleHotkeys = (
     case "g":
       if (!selectedItems.length) break;
       if (isSelectedType(...ViewportInteractionAllowed))
-        window.viewportMode === ViewportModes.grab
+        viewportMode.value === ViewportModes.grab
           ? setmode(ViewportModes.navigate)
           : setmode(ViewportModes.grab);
       break;
@@ -190,7 +192,7 @@ export const handleHotkeys = (
     case "r":
       if (!selectedItems.length) break;
       if (isSelectedType(...ViewportInteractionAllowed))
-        window.viewportMode === ViewportModes.rotate
+        viewportMode.value === ViewportModes.rotate
           ? setmode(ViewportModes.navigate)
           : setmode(ViewportModes.rotate);
       break;
@@ -202,7 +204,7 @@ export const handleHotkeys = (
     case "s":
       if (!selectedItems.length) break;
       if (isSelectedType(...ViewportInteractionAllowed))
-        window.viewportMode === ViewportModes.scale
+        viewportMode.value === ViewportModes.scale
           ? setmode(ViewportModes.navigate)
           : setmode(ViewportModes.scale);
       break;

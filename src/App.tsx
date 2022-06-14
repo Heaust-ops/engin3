@@ -2,7 +2,7 @@ import "./App.css";
 import ContextMenuWrapperDiv from "./components/ContextMenu/ContextMenuWrapperDiv";
 import styles from "./App.module.css";
 import { useEffect, useState } from "react";
-import { controls, viewportInit } from "./three/viewport";
+import { controls, viewportInit, viewportMode } from "./three/viewport";
 import { viewportAddMenu } from "./contextMenus/viewportAdd/viewportAdd";
 import { ViewportEventType, ViewportModes, WorkingAxes } from "./enums";
 import { isSelectedType } from "./utils/validity";
@@ -61,8 +61,14 @@ let eventHistoryBroomPoller: NodeJS.Timer;
  */
 const App = () => {
   const [keyStack, setkeyStack] = useState([] as KeyboardEvent["key"][]);
-  const [mode, setmode] = useState(ViewportModes.navigate);
+  const [workingAxis, setworkingAxis] = useState(WorkingAxes.all);
+  const [mode, setMode] = useState(ViewportModes.navigate);
   const [selectedItemsCount, setselectedItemsCount] = useState(0);
+
+  const setmode = (arg: ViewportModes) => {
+    setMode(arg);
+    viewportMode.value = arg;
+  };
 
   /** Initializations on First Mount */
   useEffect(() => {
@@ -97,7 +103,6 @@ const App = () => {
    * Regulating Mode Changes & Implementing Mode Logic
    */
   useEffect(() => {
-    window.viewportMode = mode;
     let mouseDeltaInterval: NodeJS.Timer;
 
     /**
@@ -113,7 +118,7 @@ const App = () => {
      * we want the Working Axis to be 'All'.
      */
     if (mode === ViewportModes.navigate) {
-      window.workingAxis = WorkingAxes.all;
+      setworkingAxis(WorkingAxes.all);
       document.exitPointerLock();
     }
 
@@ -150,12 +155,14 @@ const App = () => {
           /**
            * Handle Grab
            */
-          if (mode === ViewportModes.grab) grab(delta, currentPos, keyStack);
+          if (mode === ViewportModes.grab)
+            grab(delta, currentPos, workingAxis, keyStack);
 
           /**
            * Handle Rotation
            */
-          if (mode === ViewportModes.rotate) rotate(delta, currentPos);
+          if (mode === ViewportModes.rotate)
+            rotate(delta, currentPos, workingAxis);
         }
         prevPos = currentPos;
       }, 10);
@@ -164,7 +171,7 @@ const App = () => {
     return () => {
       if (mouseDeltaInterval) clearInterval(mouseDeltaInterval);
     };
-  }, [keyStack, mode]);
+  }, [keyStack, mode, workingAxis]);
 
   /**
    * Handle the Key Stack
@@ -173,7 +180,7 @@ const App = () => {
     /**
      * React to Changes
      */
-    handleHotkeys(keyStack, setmode);
+    handleHotkeys(keyStack, setmode, { get: workingAxis, set: setworkingAxis });
 
     /**
      * Add keys to the Key Stack
@@ -216,7 +223,7 @@ const App = () => {
       document.removeEventListener("keydown", onKeyDown);
       document.removeEventListener("keyup", onKeyUp);
     };
-  }, [keyStack]);
+  }, [keyStack, workingAxis]);
 
   return (
     <div className={`App ${styles.App}`}>
@@ -338,29 +345,29 @@ const App = () => {
                 case ViewportModes.grab:
                   if (
                     ![WorkingAxes.x, WorkingAxes.y, WorkingAxes.z].includes(
-                      window.workingAxis
+                      workingAxis
                     )
                   )
                     break; // Gaurd
 
-                  grab([direction, direction, direction], 1);
+                  grab([direction, direction, direction], 1, workingAxis);
                   break;
                 case ViewportModes.rotate:
                   if (
                     ![WorkingAxes.x, WorkingAxes.y, WorkingAxes.z].includes(
-                      window.workingAxis
+                      workingAxis
                     )
                   )
                     break; // Gaurd
 
-                  rotate([direction, direction, direction], 1);
+                  rotate([direction, direction, direction], 1, workingAxis);
                   break;
                 case ViewportModes.scale:
                   if (!isSelectedType(...ViewportInteractionAllowed)) break; // Gaurd
                   const scalingFactor = direction / 10;
                   const scalingVector = getVector3Component(
                     new Vector3(scalingFactor, scalingFactor, scalingFactor),
-                    window.workingAxis
+                    workingAxis
                   );
 
                   doForSelectedItems((x) => {
