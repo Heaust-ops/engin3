@@ -2,6 +2,14 @@ import { FunctionComponent, useState } from "react";
 import styles from "./TransformsMenu.module.css";
 import ArrowRightIcon from "@material-ui/icons/ArrowRight";
 import TransformPropertyMenu from "./TransformPropertyMenu";
+import {
+  scrollRotatey,
+  scrollRotateyLimit,
+  scrolly,
+  scrollyLimit,
+  setscrollRotatey,
+  setscrolly,
+} from "../../utils/scroll";
 
 interface TransformsMenuProps {}
 
@@ -23,13 +31,12 @@ const TransformsMenu: FunctionComponent<TransformsMenuProps> = () => {
           Math.sign(ev.deltaY) < 0 ? 1 /** Scroll Up */ : -1; /** Scroll Down */
 
         /** Manage Rotating Scroll */
-        window.scrollRotatey =
-          (window.scrollRotatey - direction) % window.scrollRotateyLimit;
+        setscrollRotatey((scrollRotatey - direction) % scrollRotateyLimit);
 
         /** Manage Linear Scroll */
-        const tmpScrollY = window.scrolly - direction;
-        if (tmpScrollY >= 0 && tmpScrollY <= window.scrollyLimit)
-          window.scrolly = tmpScrollY;
+        const tmpScrollY = scrolly - direction;
+        if (tmpScrollY >= 0 && tmpScrollY <= scrollyLimit)
+          setscrolly(tmpScrollY);
       }}
       className={`${styles.Wrapper}`}
     >
