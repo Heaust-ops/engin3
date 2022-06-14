@@ -5,16 +5,21 @@ import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass.js";
 import { ViewportModes } from "../enums";
 import { doForSelectedItems } from "../utils/utils";
-import { selectObject3D, unselectObject3D } from "../utils/selection";
+import { isMultiselect, selectObject3D, unselectObject3D } from "../utils/selection";
 import { performAnimationStep } from "../utils/animations";
 import { mousePosition, ndcMousePosition } from "../utils/mouse";
 import { viewportDivClassName } from "../utils/constants";
 
 export const scene = new THREE.Scene();
 export const ambientLight = new THREE.AmbientLight(0xffffff, 2);
+export let viewportCamera: THREE.PerspectiveCamera;
+export const setviewportCamera = (arg: THREE.PerspectiveCamera) => {
+  viewportCamera = arg;
+};
+export let defaultViewportCamera: THREE.PerspectiveCamera;
+export let outlinePass: OutlinePass;
+export let controls: OrbitControls;
 let previousRAF: number;
-
-window.multiselect = false;
 
 export const viewportInit = (targetClass = viewportDivClassName) => {
   // Only run when viewport isn't already initialised
@@ -51,21 +56,18 @@ export const viewportInit = (targetClass = viewportDivClassName) => {
     const fov = 60;
     const near = 0.2;
     const far = 400.0;
-    window.viewportCamera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-    window.defaultViewportCamera = window.viewportCamera;
-    window.viewportCamera.position.set(10, 10, 10);
-    window.viewportCamera.lookAt(0, 0, 0);
-    window.controls = new OrbitControls(
-      window.viewportCamera,
-      renderer.domElement
-    );
-    window.controls.zoomSpeed = 3;
-    window.controls.mouseButtons = {
+    viewportCamera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+    defaultViewportCamera = viewportCamera;
+    viewportCamera.position.set(10, 10, 10);
+    viewportCamera.lookAt(0, 0, 0);
+    controls = new OrbitControls(viewportCamera, renderer.domElement);
+    controls.zoomSpeed = 3;
+    controls.mouseButtons = {
       LEFT: THREE.MOUSE.LEFT,
       MIDDLE: THREE.MOUSE.ROTATE,
       RIGHT: THREE.MOUSE.RIGHT,
     };
-    window.controls.update();
+    controls.update();
 
     // Setting up RayCaster
     let rc = new THREE.Raycaster();
@@ -122,25 +124,25 @@ export const viewportInit = (targetClass = viewportDivClassName) => {
 
     // Post Processing
     const composer = new EffectComposer(renderer); // make composer
-    const renderPass = new RenderPass(scene, window.viewportCamera); // make render pass
+    const renderPass = new RenderPass(scene, viewportCamera); // make render pass
     composer.addPass(renderPass); // add render pass
 
-    window.outlinePass = new OutlinePass(
+    outlinePass = new OutlinePass(
       new THREE.Vector2(Cwidth(), Cheight()),
       scene,
-      window.viewportCamera
+      viewportCamera
     );
-    window.outlinePass.visibleEdgeColor = new THREE.Color("#FFCC54");
-    window.outlinePass.hiddenEdgeColor = new THREE.Color("#FFCC54");
-    window.outlinePass.edgeStrength = 3;
-    window.outlinePass.edgeGlow = 0;
-    composer.addPass(window.outlinePass);
+    outlinePass.visibleEdgeColor = new THREE.Color("#FFCC54");
+    outlinePass.hiddenEdgeColor = new THREE.Color("#FFCC54");
+    outlinePass.edgeStrength = 3;
+    outlinePass.edgeGlow = 0;
+    composer.addPass(outlinePass);
 
     renderer.domElement.onmousedown = (ev) => {
       if (ev.button === 0 && window.viewportMode === ViewportModes.navigate) {
         // Only Select on Left Click and on Navigation mode
         CheckRC(
-          window.viewportCamera,
+          viewportCamera,
           (intersects: THREE.Intersection[]) => {
             // This is to avoid selecting Axes and Grid helpers
             let selectedMeshIndex = 0;
@@ -183,12 +185,12 @@ export const viewportInit = (targetClass = viewportDivClassName) => {
             if (selectedItem && itemAlreadySelected) {
               unselectObject3D(selectedItem);
             } else {
-              selectObject3D(selectedItem, !window.multiselect);
+              selectObject3D(selectedItem, !isMultiselect);
             }
           },
           () => {
             selectObject3D(null, true);
-            window.outlinePass.selectedObjects = [];
+            outlinePass.selectedObjects = [];
           }
         );
       }
@@ -218,9 +220,9 @@ export const viewportInit = (targetClass = viewportDivClassName) => {
     window.addEventListener(
       "resize",
       () => {
-        window.viewportCamera.aspect = Cwidth() / Cheight();
+        viewportCamera.aspect = Cwidth() / Cheight();
         renderer.setSize(Cwidth(), Cheight());
-        window.viewportCamera.updateProjectionMatrix();
+        viewportCamera.updateProjectionMatrix();
       },
       false
     );

@@ -1,4 +1,5 @@
 import { ViewportModes, ViewportEventType, WorkingAxes } from "../enums";
+import { defaultViewportCamera, setviewportCamera, viewportCamera } from "../three/viewport";
 import {
   CameraTypes,
   LightTypes,
@@ -6,7 +7,7 @@ import {
   ViewportInteractionAllowed,
 } from "./constants";
 import { getLatestVE, reloadFromVE } from "./events";
-import { properSelected, selectedItems } from "./selection";
+import { isMultiselect, properSelected, selectedItems, turnMultiselect } from "./selection";
 import {
   rollbackTransaction,
   startTransaction,
@@ -30,7 +31,7 @@ export const handleHotkeys = (
    * Reset All the Values we only want
    * working on Hold.
    */
-  if (window.multiselect) window.multiselect = false;
+  if (isMultiselect) turnMultiselect(false);
 
   /**
    * Handle Keys
@@ -219,7 +220,7 @@ export const handleHotkeys = (
      * Shift (Hold): Allows Multiple Objects to be Selected
      */
     case "shift":
-      if (!window.multiselect) window.multiselect = true;
+      if (!isMultiselect) turnMultiselect(true);
       break;
 
     /**
@@ -271,16 +272,16 @@ export const handleHotkeys = (
        * Camera binding, changing
        */
       if (selected.length === 1 && CameraTypes.includes(selected[0].type)) {
-        if (window.viewportCamera.id === selected[0].id)
-          window.viewportCamera = window.defaultViewportCamera;
-        else window.viewportCamera = selected[0] as THREE.PerspectiveCamera;
+        if (viewportCamera.id === selected[0].id)
+          setviewportCamera(defaultViewportCamera);
+        else setviewportCamera(selected[0] as THREE.PerspectiveCamera);
       }
 
       if (
         !selected.length &&
-        window.viewportCamera.id !== window.defaultViewportCamera.id
+        viewportCamera.id !== defaultViewportCamera.id
       )
-        window.viewportCamera = window.defaultViewportCamera;
+        setviewportCamera(defaultViewportCamera);
 
       break;
   }

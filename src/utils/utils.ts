@@ -1,7 +1,7 @@
 import { Group, Vector3 } from "three";
 import { WorkingAxes } from "../enums";
 import { MousePosition } from "../interfaces";
-import { scene } from "../three/viewport";
+import { scene, viewportCamera } from "../three/viewport";
 import { mousePosition, ndcMousePosition } from "./mouse";
 import { isAnySelected, selectedItems } from "./selection";
 
@@ -101,10 +101,10 @@ export const getMousePositionIn3D = (ndc?: MousePosition) => {
   const coords = new Vector3(ndc.x, ndc.y, 0);
   const origin = new Vector3();
   const direction = new Vector3(0, 0, -1);
-  origin.setFromMatrixPosition(window.viewportCamera.matrixWorld);
+  origin.setFromMatrixPosition(viewportCamera.matrixWorld);
   direction
     .set(coords.x, coords.y, 0.5)
-    .unproject(window.viewportCamera)
+    .unproject(viewportCamera)
     .sub(origin)
     .normalize();
 

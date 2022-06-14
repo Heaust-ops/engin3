@@ -2,7 +2,7 @@ import "./App.css";
 import ContextMenuWrapperDiv from "./components/ContextMenu/ContextMenuWrapperDiv";
 import styles from "./App.module.css";
 import { useEffect, useState } from "react";
-import { viewportInit } from "./three/viewport";
+import { controls, viewportInit } from "./three/viewport";
 import { viewportAddMenu } from "./contextMenus/viewportAdd/viewportAdd";
 import { ViewportEventType, ViewportModes, WorkingAxes } from "./enums";
 import { isSelectedType } from "./utils/validity";
@@ -99,9 +99,9 @@ const App = () => {
     /**
      * We Only want Orbital Controls in Navigate Mode
      */
-    if (window.controls) {
-      if (mode !== ViewportModes.navigate) window.controls.enabled = false;
-      else window.controls.enabled = true;
+    if (controls) {
+      if (mode !== ViewportModes.navigate) controls.enabled = false;
+      else controls.enabled = true;
     }
 
     /**

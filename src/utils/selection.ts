@@ -1,3 +1,4 @@
+import { outlinePass } from "../three/viewport";
 import {
   NonSelectionTypes,
   TypesThatNeedHelpers,
@@ -6,6 +7,11 @@ import {
 import { getHelper } from "./utils";
 
 export let selectedItems = [] as THREE.Object3D[];
+export let isMultiselect = false;
+export const turnMultiselect = (arg: boolean | null = null) => {
+  if (!arg) isMultiselect = !isMultiselect;
+  else isMultiselect = true;
+};
 export const isAnySelected = () => !!selectedItems.length;
 
 /**
@@ -13,7 +19,7 @@ export const isAnySelected = () => !!selectedItems.length;
  * @param args The 3D Objects to highlight
  */
 export const highlightObjects = (args: THREE.Object3D[]) => {
-  window.outlinePass.selectedObjects = args;
+  outlinePass.selectedObjects = args;
 };
 
 /**
@@ -36,7 +42,7 @@ export const selectObject3D = (
   ) {
     if (strict) {
       selectedItems = [];
-      window.outlinePass.selectedObjects = [];
+      outlinePass.selectedObjects = [];
     }
     return;
   }
@@ -53,11 +59,11 @@ export const selectObject3D = (
 
   if (strict) {
     selectedItems = arg;
-    window.outlinePass.selectedObjects = arg;
+    outlinePass.selectedObjects = arg;
   } else {
     selectedItems = selectedItems.concat(arg);
-    window.outlinePass.selectedObjects =
-      window.outlinePass.selectedObjects.concat(arg);
+    outlinePass.selectedObjects =
+      outlinePass.selectedObjects.concat(arg);
   }
 };
 
@@ -81,11 +87,11 @@ export const unselectObject3D = (args: THREE.Object3D[] | THREE.Object3D) => {
     const findIndex0 = selectedItems.findIndex((a) => a.id === arg.id);
     findIndex0 !== -1 && selectedItems.splice(findIndex0, 1);
 
-    const findIndex1 = window.outlinePass.selectedObjects.findIndex(
+    const findIndex1 = outlinePass.selectedObjects.findIndex(
       (a) => a.id === arg.id
     );
     findIndex1 !== -1 &&
-      window.outlinePass.selectedObjects.splice(findIndex1, 1);
+      outlinePass.selectedObjects.splice(findIndex1, 1);
   });
 };
 
