@@ -1,5 +1,9 @@
 import { ViewportModes, ViewportEventType, WorkingAxes } from "../enums";
-import { defaultViewportCamera, setviewportCamera, viewportCamera } from "../three/viewport";
+import {
+  defaultViewportCamera,
+  renderPass,
+  viewportCamera,
+} from "../three/viewport";
 import {
   CameraTypes,
   LightTypes,
@@ -7,7 +11,12 @@ import {
   ViewportInteractionAllowed,
 } from "./constants";
 import { getLatestVE, reloadFromVE } from "./events";
-import { isMultiselect, properSelected, selectedItems, turnMultiselect } from "./selection";
+import {
+  isMultiselect,
+  properSelected,
+  selectedItems,
+  turnMultiselect,
+} from "./selection";
 import {
   rollbackTransaction,
   startTransaction,
@@ -48,6 +57,7 @@ export const handleHotkeys = (
      * O: Presently used as a debugging key
      */
     case "o":
+      console.log(renderPass);
       break;
 
     /**
@@ -273,15 +283,12 @@ export const handleHotkeys = (
        */
       if (selected.length === 1 && CameraTypes.includes(selected[0].type)) {
         if (viewportCamera.id === selected[0].id)
-          setviewportCamera(defaultViewportCamera);
-        else setviewportCamera(selected[0] as THREE.PerspectiveCamera);
+          renderPass.camera = defaultViewportCamera;
+        else renderPass.camera = selected[0] as THREE.PerspectiveCamera;
       }
 
-      if (
-        !selected.length &&
-        viewportCamera.id !== defaultViewportCamera.id
-      )
-        setviewportCamera(defaultViewportCamera);
+      if (!selected.length || viewportCamera.id !== defaultViewportCamera.id)
+        renderPass.camera = defaultViewportCamera;
 
       break;
   }

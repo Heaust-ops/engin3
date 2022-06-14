@@ -27,6 +27,9 @@ export const setviewportCamera = (arg: THREE.PerspectiveCamera) => {
 };
 export let defaultViewportCamera: THREE.PerspectiveCamera;
 
+export let composer: EffectComposer;
+export let renderPass: RenderPass;
+
 export let outlinePass: OutlinePass;
 
 export let controls: OrbitControls;
@@ -142,8 +145,8 @@ export const viewportInit = (targetClass = viewportDivClassName) => {
     scene.add(gridHelper);
 
     // Post Processing
-    const composer = new EffectComposer(renderer); // make composer
-    const renderPass = new RenderPass(scene, viewportCamera); // make render pass
+    composer = new EffectComposer(renderer); // make composer
+    renderPass = new RenderPass(scene, viewportCamera); // make render pass
     composer.addPass(renderPass); // add render pass
 
     /**
