@@ -6,6 +6,8 @@ export const CameraTypes = Object.values(Cameras) as string[];
 
 export const MeshyTypes = ["Mesh", "Group", "SkinnedMesh"];
 
+export const viewportDivClassName = "viewport";
+
 export const ViewportInteractionAllowed = [
   ...MeshyTypes,
   ...LightTypes,

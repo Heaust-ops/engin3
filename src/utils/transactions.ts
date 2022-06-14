@@ -1,5 +1,6 @@
 import { Material } from "three";
 import { Lights, MeshLoadMethod, ViewportEventType } from "../enums";
+import { scene } from "../three/viewport";
 import {
   addVE,
   getLatestVE,
@@ -66,18 +67,18 @@ export const removeMesh = (mesh: THREE.Object3D) => {
   if (isType(mesh, "Mesh")) {
     (mesh as THREE.Mesh).geometry.dispose();
     ((mesh as THREE.Mesh).material as Material).dispose();
-    window.scene.remove(mesh!);
+    scene.remove(mesh!);
   } else if (isType(mesh, ...Object.values(Lights))) {
     let helper: THREE.PointLightHelper;
-    window.scene.traverse((item) => {
+    scene.traverse((item) => {
       if (
         item.type.includes("LightHelper") &&
         (item as THREE.PointLightHelper).light.id === mesh.id
       )
         helper = item as THREE.PointLightHelper;
     });
-    window.scene.remove(helper!);
-    window.scene.remove(mesh!);
+    scene.remove(helper!);
+    scene.remove(mesh!);
   }
   // Properly get Rid of Groups
   else if (isType(mesh, "Group", "SkinnedMesh")) {
@@ -87,7 +88,7 @@ export const removeMesh = (mesh: THREE.Object3D) => {
     });
     children_to_remove.forEach((child) => {
       mesh.remove(child);
-      window.scene.remove(child);
+      scene.remove(child);
     });
   }
 };
@@ -184,7 +185,7 @@ export const commitTransaction = () => {
     let transactedObject: THREE.Object3D | null = null;
 
     transactedObject =
-      window.scene.getObjectById(pendingTransaction.objectID) ?? null;
+      scene.getObjectById(pendingTransaction.objectID) ?? null;
 
     // Prepare Event Information
     switch (type) {

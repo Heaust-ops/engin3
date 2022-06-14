@@ -7,8 +7,6 @@ import { ViewportModes, WorkingAxes } from "./enums";
  */
 declare global {
   interface Window {
-    scene: THREE.Scene /** The threejs scene we're working with */;
-    ambientLight: THREE.AmbientLight;
     viewportMode: ViewportModes /** Things like Grab, Scale, Rotate */;
 
     /** Current working axis
@@ -42,7 +40,6 @@ declare global {
      */
     outlinePass: OutlinePass /** For highlighting selected objects */;
     multiselect: boolean /** for shift + selecting */;
-    previousRAF: number /** the time the previous frame rendered on */;
   }
 }
 

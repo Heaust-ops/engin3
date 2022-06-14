@@ -8,15 +8,17 @@ import { doForSelectedItems } from "../utils/utils";
 import { selectObject3D, unselectObject3D } from "../utils/selection";
 import { performAnimationStep } from "../utils/animations";
 import { mousePosition, ndcMousePosition } from "../utils/mouse";
+import { viewportDivClassName } from "../utils/constants";
 
-var scene = new THREE.Scene();
+export const scene = new THREE.Scene();
+export const ambientLight = new THREE.AmbientLight(0xffffff, 2);
+let previousRAF: number;
 
 window.multiselect = false;
-window.scene = scene;
 
-export const viewportInit = (targetClass = "viewport") => {
+export const viewportInit = (targetClass = viewportDivClassName) => {
   // Only run when viewport isn't already initialised
-  if (window.scene.children.length > 0) return;
+  if (scene.children.length > 0) return;
 
   const target = document.getElementsByClassName(targetClass);
   if (target) {
@@ -42,8 +44,7 @@ export const viewportInit = (targetClass = "viewport") => {
     renderer.domElement.style.zIndex = "1";
 
     target[0].appendChild(renderer.domElement);
-    window.ambientLight = new THREE.AmbientLight(0xffffff, 2);
-    scene.add(window.ambientLight);
+    scene.add(ambientLight);
 
     // Camera Setup
     const aspect = Cwidth() / Cheight();
@@ -94,7 +95,7 @@ export const viewportInit = (targetClass = "viewport") => {
         new THREE.Vector3(ndcMousePosition.x, ndcMousePosition.y, 0),
         camera
       );
-      let intersects = rc.intersectObjects(window.scene.children);
+      let intersects = rc.intersectObjects(scene.children);
       if (intersects.length > 0) {
         onIntersection(intersects);
       } else {
@@ -106,7 +107,7 @@ export const viewportInit = (targetClass = "viewport") => {
     // Helpers
     const axesHelper = new THREE.AxesHelper(0.7);
     axesHelper.geometry.translate(0, 0.05, 0);
-    window.scene.add(axesHelper);
+    scene.add(axesHelper);
 
     const size = 1000;
     const divisions = 500;
@@ -201,13 +202,13 @@ export const viewportInit = (targetClass = "viewport") => {
         RAF();
 
         // Animations
-        if (!window.previousRAF) {
-          window.previousRAF = timeElapsed;
+        if (!previousRAF) {
+          previousRAF = timeElapsed;
         }
 
         performAnimationStep(timeElapsed);
 
-        window.previousRAF = timeElapsed;
+        previousRAF = timeElapsed;
       });
     };
 

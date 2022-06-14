@@ -1,4 +1,5 @@
 import { FunctionComponent, useEffect, useState } from "react";
+import { ambientLight } from "../../../../three/viewport";
 import NumericReactiveInput from "../../../NumericReactiveInput/NumericReactiveInput";
 import baseStyles from "../PropertyTabs.module.css";
 
@@ -20,7 +21,7 @@ const AmbientLightProperties: FunctionComponent<
   useEffect(() => {
     if (!ambientLightLoaded)
       ambientLightInterval = setInterval(() => {
-        if (window.ambientLight) setambientLightLoaded(true);
+        if (ambientLight) setambientLightLoaded(true);
       }, 10);
     else if (ambientLightInterval) clearInterval(ambientLightInterval);
 
@@ -35,11 +36,11 @@ const AmbientLightProperties: FunctionComponent<
         <h4>Intensity:</h4>{" "}
         {ambientLightLoaded && (
           <NumericReactiveInput
-            getter={() => window.ambientLight.intensity}
+            getter={() => ambientLight.intensity}
             setter={(arg) => {
-              window.ambientLight.intensity = arg;
+              ambientLight.intensity = arg;
             }}
-            objectId={window.ambientLight.id}
+            objectId={ambientLight.id}
             property={"intensity"}
           />
         )}
@@ -68,11 +69,11 @@ const AmbientLightProperties: FunctionComponent<
               <h4>R:</h4>
               <NumericReactiveInput
                 step={0.02}
-                getter={() => window.ambientLight.color.r}
+                getter={() => ambientLight.color.r}
                 setter={(arg) => {
-                  window.ambientLight.color.r = arg;
+                  ambientLight.color.r = arg;
                 }}
-                objectId={window.ambientLight.id}
+                objectId={ambientLight.id}
                 property={"color.r"}
               />
             </div>
@@ -80,11 +81,11 @@ const AmbientLightProperties: FunctionComponent<
               <h4>G:</h4>
               <NumericReactiveInput
                 step={0.02}
-                getter={() => window.ambientLight.color.g}
+                getter={() => ambientLight.color.g}
                 setter={(arg) => {
-                  window.ambientLight.color.g = arg;
+                  ambientLight.color.g = arg;
                 }}
-                objectId={window.ambientLight.id}
+                objectId={ambientLight.id}
                 property={"color.g"}
               />
             </div>
@@ -92,11 +93,11 @@ const AmbientLightProperties: FunctionComponent<
               <h4>B:</h4>
               <NumericReactiveInput
                 step={0.02}
-                getter={() => window.ambientLight.color.b}
+                getter={() => ambientLight.color.b}
                 setter={(arg) => {
-                  window.ambientLight.color.b = arg;
+                  ambientLight.color.b = arg;
                 }}
-                objectId={window.ambientLight.id}
+                objectId={ambientLight.id}
                 property={"color.b"}
               />
             </div>

@@ -1,6 +1,7 @@
 import { Group, Vector3 } from "three";
 import { WorkingAxes } from "../enums";
 import { MousePosition } from "../interfaces";
+import { scene } from "../three/viewport";
 import { mousePosition, ndcMousePosition } from "./mouse";
 import { isAnySelected, selectedItems } from "./selection";
 
@@ -66,7 +67,7 @@ export const keepTrackOfCursor = (mouseMoveEvent: MouseEvent) => {
 export const getHelper = (arg: THREE.Object3D) => {
   let helper: THREE.PointLightHelper | THREE.CameraHelper | null = null;
   if (arg.type.includes("Light")) {
-    window.scene.traverse((item) => {
+    scene.traverse((item) => {
       if (
         item.type.includes("LightHelper") &&
         (item as THREE.PointLightHelper).light.id === arg.id
@@ -76,7 +77,7 @@ export const getHelper = (arg: THREE.Object3D) => {
   }
 
   if (arg.type.includes("Camera")) {
-    window.scene.traverse((item) => {
+    scene.traverse((item) => {
       if (
         item.type.includes("CameraHelper") &&
         (item as THREE.CameraHelper).camera.id === arg.id
@@ -143,17 +144,17 @@ export const getVector3Component = (vec: Vector3, axis: WorkingAxes) => {
 export const makeGroup = (items: THREE.Object3D[]) => {
   const group = new Group();
   items.forEach((item) => {
-    window.scene.remove(item);
+    scene.remove(item);
     group.add(item);
   });
-  window.scene.add(group);
+  scene.add(group);
 };
 
 export const unmakeGroup = (group: THREE.Group) => {
   for (let i = group.children.length - 1; i >= 0; i--) {
-    window.scene.attach(group.children[i]);
+    scene.attach(group.children[i]);
   }
-  window.scene.remove(group);
+  scene.remove(group);
 };
 
 export const randomColor = () =>

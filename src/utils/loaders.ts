@@ -12,6 +12,8 @@ import { commitTransaction, startTransaction } from "./transactions";
 import { addAnimationStep } from "./animations";
 import { randomColor } from "./utils";
 import { defaultMaterial } from "./materials";
+import { scene } from "../three/viewport";
+import { viewportDivClassName } from "./constants";
 
 /**
  * This Page Keeps the Model Loaders,
@@ -146,7 +148,7 @@ export const loadPrimitive = ({
     mesh.scale.set(...size);
     mesh.name = modelPath + randomColor();
     preprocess(mesh);
-    window.scene.add(mesh);
+    scene.add(mesh);
 
     // Record Transaction
     if (asTransaction) {
@@ -206,7 +208,7 @@ export const loadGLTFModel = ({
       gltf.scene.rotation.set(...rotation);
       gltf.scene.name = "GLTFModel" + randomColor();
       preprocess(gltf.scene);
-      window.scene.add(gltf.scene);
+      scene.add(gltf.scene);
 
       if (asTransaction) {
         // Record Transaction
@@ -256,7 +258,7 @@ export const loadFBXModel = ({
       fbx.rotation.set(...rotation);
       fbx.name = "FBXModel" + randomColor();
       preprocess(fbx);
-      window.scene.add(fbx);
+      scene.add(fbx);
 
       // Record Transaction
       if (asTransaction) {
@@ -300,7 +302,7 @@ export const loadLight = ({
   switch (modelPath) {
     case Lights.directional: {
       light = new THREE.DirectionalLight(0xff0000, 60);
-      window.scene.add(light);
+      scene.add(light);
       const helper = new THREE.PointLightHelper(
         light as THREE.PointLight,
         1,
@@ -312,7 +314,7 @@ export const loadLight = ({
           light!.lookAt((light as THREE.DirectionalLight).target.position);
         }
       });
-      window.scene.add(helper);
+      scene.add(helper);
       break;
     }
     case Lights.hemispehre: {
@@ -323,20 +325,20 @@ export const loadLight = ({
         "#D87EBE"
       );
       helper.type = "HemisphereLightHelper";
-      window.scene.add(helper);
+      scene.add(helper);
       break;
     }
     case Lights.point: {
       light = new THREE.PointLight(0xff0000, 60, 100);
-      window.scene.add(light);
+      scene.add(light);
 
       const helper = new THREE.PointLightHelper(light as THREE.PointLight, 1);
-      window.scene.add(helper);
+      scene.add(helper);
       break;
     }
     case Lights.spot: {
       light = new THREE.SpotLight(0xff0000, 60);
-      window.scene.add(light);
+      scene.add(light);
       const helper = new THREE.PointLightHelper(
         light as THREE.PointLight,
         1,
@@ -348,7 +350,7 @@ export const loadLight = ({
           light!.lookAt((light as THREE.SpotLight).target.position);
         }
       });
-      window.scene.add(helper);
+      scene.add(helper);
       break;
     }
   }
@@ -360,7 +362,7 @@ export const loadLight = ({
     light.scale.set(...size);
     light.name = modelPath + randomColor();
     preprocess(light);
-    window.scene.add(light);
+    scene.add(light);
 
     // Record Transaction
     if (asTransaction) {
@@ -400,17 +402,19 @@ export const loadCamera = ({
 } = {}) => {
   if (!modelPath) return;
   let camera: THREE.Camera | null = null;
+
   const Cwidth = () => {
-    return document.getElementsByClassName("viewport")[0].clientWidth;
+    return document.getElementsByClassName(viewportDivClassName)[0].clientWidth;
   };
   const Cheight = () => {
-    return document.getElementsByClassName("viewport")[0].clientHeight;
+    return document.getElementsByClassName(viewportDivClassName)[0].clientHeight;
   };
+
   switch (modelPath) {
     case Cameras.perspective:
       camera = new THREE.PerspectiveCamera(75, Cwidth() / Cheight(), 0.1, 1000);
       const persprectiveHelper = new THREE.CameraHelper(camera);
-      window.scene.add(persprectiveHelper);
+      scene.add(persprectiveHelper);
       break;
     case Cameras.orthographic:
       camera = new THREE.OrthographicCamera(
@@ -422,7 +426,7 @@ export const loadCamera = ({
         1000
       );
       const orthographicHelper = new THREE.CameraHelper(camera);
-      window.scene.add(orthographicHelper);
+      scene.add(orthographicHelper);
       break;
   }
 
@@ -433,7 +437,7 @@ export const loadCamera = ({
     camera.scale.set(...size);
     camera.name = modelPath + randomColor();
     preprocess(camera);
-    window.scene.add(camera);
+    scene.add(camera);
 
     // Record Transaction
     if (asTransaction) {

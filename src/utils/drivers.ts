@@ -1,4 +1,5 @@
 import { DriverType, ViewportEventType } from "../enums";
+import { scene } from "../three/viewport";
 import {
   addAnimationStep,
   AnimationFunction,
@@ -123,7 +124,7 @@ export const getDriver = (objectId: number, property: string) => {
  */
 const prepareDriver = (driver: Driver) => {
   if (!isSyntaxOk(driver.expression)) return null;
-  const driverObject = window.scene.getObjectById(driver.objectID);
+  const driverObject = scene.getObjectById(driver.objectID);
   if (!driverObject) return null;
   /**
    * Animation function for a driver.

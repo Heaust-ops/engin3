@@ -20,7 +20,7 @@ import {
   keepTrackOfCursor,
   randomColor,
 } from "./utils/utils";
-import { ViewportInteractionAllowed } from "./utils/constants";
+import { viewportDivClassName, ViewportInteractionAllowed } from "./utils/constants";
 import { handleHotkeys } from "./utils/viewportHotkeys";
 import TransformsMenu from "./components/TransformsMenu/TransformsMenu";
 import { Vector3 } from "three";
@@ -365,7 +365,7 @@ const App = () => {
                   break;
               }
             }}
-            className={`${styles.viewport} viewport`}
+            className={`${styles.viewport} ${viewportDivClassName}`}
           />
           {selectedItemsCount === 1 && <TransformsMenu />}
         </ContextMenuWrapperDiv>

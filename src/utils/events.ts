@@ -8,6 +8,7 @@ import {
 import { selectObject3D, unselectObject3D } from "./selection";
 import { applyDriver, deleteDriver, Driver } from "./drivers";
 import { removeAnimationStep } from "./animations";
+import { scene } from "../three/viewport";
 
 /**
  * Interfaces and Methods
@@ -278,7 +279,7 @@ export const reverseVE = (ve: ViewportEvent | number) => {
     // reapply previous scale
     case ViewportEventType.scale: {
       const info = ve.info as ViewportEventAxesInfo;
-      const obj = window.scene.getObjectById(info.objectID);
+      const obj = scene.getObjectById(info.objectID);
       if (obj) obj.scale.set(info.initialX, info.initialY, info.initialZ);
       else return false;
       return true;
@@ -287,7 +288,7 @@ export const reverseVE = (ve: ViewportEvent | number) => {
     // reapply previous position
     case ViewportEventType.grab: {
       const info = ve.info as ViewportEventAxesInfo;
-      const obj = window.scene.getObjectById(info.objectID);
+      const obj = scene.getObjectById(info.objectID);
       if (obj) obj.position.set(info.initialX, info.initialY, info.initialZ);
       else return false;
       return true;
@@ -296,7 +297,7 @@ export const reverseVE = (ve: ViewportEvent | number) => {
     // reapply previous rotation
     case ViewportEventType.rotate: {
       const info = ve.info as ViewportEventAxesInfo;
-      const obj = window.scene.getObjectById(info.objectID);
+      const obj = scene.getObjectById(info.objectID);
       if (obj) obj.rotation.set(info.initialX, info.initialY, info.initialZ);
       else return false;
       return true;
@@ -305,7 +306,7 @@ export const reverseVE = (ve: ViewportEvent | number) => {
     // delete the mesh
     case ViewportEventType.loadMesh: {
       const info = ve.info as ViewportEventAxesInfo;
-      const obj = window.scene.getObjectById(info.objectID);
+      const obj = scene.getObjectById(info.objectID);
       removeMesh(obj as THREE.Mesh);
       return true;
     }
