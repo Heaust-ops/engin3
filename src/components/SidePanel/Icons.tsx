@@ -8,6 +8,9 @@ import AnimationIcon from "@mui/icons-material/Animation";
 import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
 import VideoCameraBackIcon from "@mui/icons-material/VideoCameraBack";
 
+/**
+ *These are the icons that'll show up on the Side Panel
+ */
 const GetIcon = (arg: ViewportSidePanelTabs) => {
   switch (arg) {
     case ViewportSidePanelTabs.world:

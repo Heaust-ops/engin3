@@ -6,13 +6,21 @@ import {
 } from "./constants";
 import { getHelper } from "./utils";
 
+/**
+ * holds the items currently selected.
+ * It'll be used a lot
+ */
 export let selectedItems = [] as THREE.Object3D[];
+export const isAnySelected = () => !!selectedItems.length;
+/**
+ * multiselect mode is when you can select multiple items
+ * at once, like when holding shift
+ */
 export let isMultiselect = false;
 export const turnMultiselect = (arg: boolean | null = null) => {
   if (!arg) isMultiselect = !isMultiselect;
   else isMultiselect = true;
 };
-export const isAnySelected = () => !!selectedItems.length;
 
 /**
  * Highlights passed objects
@@ -28,6 +36,7 @@ export const highlightObjects = (args: THREE.Object3D[]) => {
  * Strict mode means unselect everything not in the list provided
  *
  * @param arg The 3D Object to Select
+ * @param strict strict mode or nah?
  */
 export const selectObject3D = (
   arg: THREE.Object3D | THREE.Object3D[] | null,
@@ -62,8 +71,7 @@ export const selectObject3D = (
     outlinePass.selectedObjects = arg;
   } else {
     selectedItems = selectedItems.concat(arg);
-    outlinePass.selectedObjects =
-      outlinePass.selectedObjects.concat(arg);
+    outlinePass.selectedObjects = outlinePass.selectedObjects.concat(arg);
   }
 };
 
@@ -90,11 +98,15 @@ export const unselectObject3D = (args: THREE.Object3D[] | THREE.Object3D) => {
     const findIndex1 = outlinePass.selectedObjects.findIndex(
       (a) => a.id === arg.id
     );
-    findIndex1 !== -1 &&
-      outlinePass.selectedObjects.splice(findIndex1, 1);
+    findIndex1 !== -1 && outlinePass.selectedObjects.splice(findIndex1, 1);
   });
 };
 
+/**
+ *
+ * @param selected Array of 3d objects, selected items by default
+ * @returns length of actually selecteds item (not considering helpers)
+ */
 export const numSelected = (selected: THREE.Object3D[] = selectedItems) => {
   const actSelected = selected.filter((x) =>
     ViewportInteractionAllowed.includes(x.type)
@@ -103,6 +115,11 @@ export const numSelected = (selected: THREE.Object3D[] = selectedItems) => {
   return actSelected.length;
 };
 
+/**
+ *
+ * @param selected Array of 3d objects, selected items by default
+ * @returns array of actually selected items (not considering helpers)
+ */
 export const properSelected = (selected: THREE.Object3D[] = selectedItems) => {
   const actSelected = selected.filter((x) =>
     ViewportInteractionAllowed.includes(x.type)

@@ -20,7 +20,10 @@ import {
   keepTrackOfCursor,
   randomColor,
 } from "./utils/utils";
-import { viewportDivClassName, ViewportInteractionAllowed } from "./utils/constants";
+import {
+  viewportDivClassName,
+  ViewportInteractionAllowed,
+} from "./utils/constants";
 import { handleHotkeys } from "./utils/viewportHotkeys";
 import TransformsMenu from "./components/TransformsMenu/TransformsMenu";
 import { Vector3 } from "three";
@@ -50,6 +53,7 @@ const menus = {
   },
 };
 
+/** Event That'll poll for large memory usage by VE history and clean it up */
 let eventHistoryBroomPoller: NodeJS.Timer;
 
 /**

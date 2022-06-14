@@ -60,6 +60,27 @@ export const keepTrackOfCursor = (mouseMoveEvent: MouseEvent) => {
 };
 
 /**
+ * Returns the target of a helper given the helper
+ * @param arg the helper whose target we want
+ * @returns The target of the helper if it has one, null otherwise
+ */
+export const getHelperTarget = (arg: THREE.Object3D | null) => {
+  if (!arg) return null;
+
+  // Actually select the Lights if selected helper
+  if ((arg as THREE.PointLightHelper)?.light) {
+    return (arg as THREE.PointLightHelper).light;
+  }
+
+  // Actually select the Camera if selected helper
+  if ((arg as THREE.CameraHelper)?.camera) {
+    return (arg as THREE.CameraHelper).camera;
+  }
+
+  return null;
+};
+
+/**
  * Returns ther helper of an object given the object itself
  * @param arg the object whose helper we want
  * @returns The helper of the object if it has one
@@ -141,6 +162,12 @@ export const getVector3Component = (vec: Vector3, axis: WorkingAxes) => {
   }
 };
 
+/**
+ * Takes an Array of 3D Objects and
+ * moves them into a group
+ *
+ * @param items The Array of Items
+ */
 export const makeGroup = (items: THREE.Object3D[]) => {
   const group = new Group();
   items.forEach((item) => {
@@ -150,6 +177,13 @@ export const makeGroup = (items: THREE.Object3D[]) => {
   scene.add(group);
 };
 
+/**
+ * Unmakes a group.
+ * i.e. The children of the group won't be grouped
+ * anymore / exist independantly
+ *
+ * @param group The Group to Unmake
+ */
 export const unmakeGroup = (group: THREE.Group) => {
   for (let i = group.children.length - 1; i >= 0; i--) {
     scene.attach(group.children[i]);
@@ -157,6 +191,9 @@ export const unmakeGroup = (group: THREE.Group) => {
   scene.remove(group);
 };
 
+/**
+ * @returns Random Hex String ('#' not included)
+ */
 export const randomColor = () =>
   Math.floor(Math.random() * 16777215)
     .toString(16)

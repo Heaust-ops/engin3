@@ -4,21 +4,33 @@ import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass.js";
 import { ViewportModes } from "../enums";
-import { doForSelectedItems } from "../utils/utils";
-import { isMultiselect, selectObject3D, unselectObject3D } from "../utils/selection";
+import { doForSelectedItems, getHelperTarget } from "../utils/utils";
+import {
+  isMultiselect,
+  selectObject3D,
+  unselectObject3D,
+} from "../utils/selection";
 import { performAnimationStep } from "../utils/animations";
 import { mousePosition, ndcMousePosition } from "../utils/mouse";
-import { viewportDivClassName } from "../utils/constants";
+import {
+  viewportDivClassName,
+  ViewportInteractionAllowed,
+} from "../utils/constants";
 
 export const scene = new THREE.Scene();
+
 export const ambientLight = new THREE.AmbientLight(0xffffff, 2);
+
 export let viewportCamera: THREE.PerspectiveCamera;
 export const setviewportCamera = (arg: THREE.PerspectiveCamera) => {
   viewportCamera = arg;
 };
 export let defaultViewportCamera: THREE.PerspectiveCamera;
+
 export let outlinePass: OutlinePass;
+
 export let controls: OrbitControls;
+
 let previousRAF: number;
 
 export const viewportInit = (targetClass = viewportDivClassName) => {
@@ -88,6 +100,13 @@ export const viewportInit = (targetClass = viewportDivClassName) => {
         1;
     };
 
+    /**
+     * Generic Singular RayCast Job
+     *
+     * @param camera The Camera to Ray Cast From
+     * @param onIntersection Something to do when there's an intersection
+     * @param onEmpty Something to do when there isn't an intersection
+     */
     const CheckRC = (
       camera: THREE.PerspectiveCamera,
       onIntersection: (arg: THREE.Intersection[]) => void,
@@ -127,6 +146,9 @@ export const viewportInit = (targetClass = viewportDivClassName) => {
     const renderPass = new RenderPass(scene, viewportCamera); // make render pass
     composer.addPass(renderPass); // add render pass
 
+    /**
+     * Outline Pass will be necessary to highlight the selected items
+     */
     outlinePass = new OutlinePass(
       new THREE.Vector2(Cwidth(), Cheight()),
       scene,
@@ -138,26 +160,33 @@ export const viewportInit = (targetClass = viewportDivClassName) => {
     outlinePass.edgeGlow = 0;
     composer.addPass(outlinePass);
 
+    /**
+     * Start a Click Job to Select Items
+     */
     renderer.domElement.onmousedown = (ev) => {
       if (ev.button === 0 && window.viewportMode === ViewportModes.navigate) {
         // Only Select on Left Click and on Navigation mode
         CheckRC(
           viewportCamera,
           (intersects: THREE.Intersection[]) => {
-            // This is to avoid selecting Axes and Grid helpers
+            /**
+             * Only select items that we're allowed to interact with.
+             * Examples of items we aren't allowed to interact with are,
+             * Grid helper, Axes helper, helpers in general
+             */
             let selectedMeshIndex = 0;
             for (let i = 0; i < intersects.length; i++)
               if (
-                ["Mesh", "Group", "SkinnedMesh"].includes(
-                  intersects[i].object.type
-                ) ||
-                intersects[i].object.type.includes("LightHelper") ||
-                intersects[i].object.type.includes("CameraHelper")
+                ViewportInteractionAllowed.includes(intersects[i].object.type)
               ) {
                 selectedMeshIndex = i;
               }
 
-            // Set the Largest Shell as Selected
+            /**
+             * Set the Largest Shell as Selected
+             * i.e. if a part of a group is selected,
+             * select the whole group instead
+             */
             let selectedItem: THREE.Object3D | null =
               intersects[selectedMeshIndex].object;
 
@@ -167,16 +196,16 @@ export const viewportInit = (targetClass = viewportDivClassName) => {
             )
               selectedItem = (selectedItem as THREE.Mesh).parent;
 
-            // Actually select the Lights if selected helper
-            if ((selectedItem as THREE.PointLightHelper)?.light) {
-              selectedItem = (selectedItem as THREE.PointLightHelper).light;
-            }
+            /**
+             * Select the actual object if selected a helper
+             */
+            const helperTarget = getHelperTarget(selectedItem);
+            selectedItem = helperTarget ? helperTarget : selectedItem;
 
-            // Actually select the Camera if selected helper
-            if ((selectedItem as THREE.CameraHelper)?.camera) {
-              selectedItem = (selectedItem as THREE.CameraHelper).camera;
-            }
-
+            /**
+             * If an item is already selected
+             * clicking on them whould unselect them
+             */
             let itemAlreadySelected = false;
             doForSelectedItems((item) => {
               if (item.id === selectedItem!.id) itemAlreadySelected = true;
@@ -194,7 +223,7 @@ export const viewportInit = (targetClass = viewportDivClassName) => {
           }
         );
       }
-    }; // Start a Click Job to Select Items
+    };
 
     // Play Animation
     const RAF = () => {
