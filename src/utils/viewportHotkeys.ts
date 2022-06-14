@@ -1,8 +1,8 @@
 import { ViewportModes, ViewportEventType, WorkingAxes } from "../enums";
 import {
   defaultViewportCamera,
-  renderPass,
-  viewportCamera,
+  getViewportCamera,
+  setViewportCamera,
 } from "../three/viewport";
 import {
   CameraTypes,
@@ -57,7 +57,7 @@ export const handleHotkeys = (
      * O: Presently used as a debugging key
      */
     case "o":
-      console.log(renderPass);
+      console.log(getViewportCamera().id, defaultViewportCamera.id);
       break;
 
     /**
@@ -282,13 +282,16 @@ export const handleHotkeys = (
        * Camera binding, changing
        */
       if (selected.length === 1 && CameraTypes.includes(selected[0].type)) {
-        if (viewportCamera.id === selected[0].id)
-          renderPass.camera = defaultViewportCamera;
-        else renderPass.camera = selected[0] as THREE.PerspectiveCamera;
+        if (getViewportCamera().id === selected[0].id)
+          setViewportCamera(defaultViewportCamera);
+        else setViewportCamera(selected[0] as THREE.PerspectiveCamera);
       }
 
-      if (!selected.length || viewportCamera.id !== defaultViewportCamera.id)
-        renderPass.camera = defaultViewportCamera;
+      if (
+        !selected.length &&
+        getViewportCamera().id !== defaultViewportCamera.id
+      )
+        setViewportCamera(defaultViewportCamera);
 
       break;
   }

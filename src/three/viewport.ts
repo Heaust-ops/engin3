@@ -21,14 +21,16 @@ export const scene = new THREE.Scene();
 
 export const ambientLight = new THREE.AmbientLight(0xffffff, 2);
 
-export let viewportCamera: THREE.PerspectiveCamera;
-export const setviewportCamera = (arg: THREE.PerspectiveCamera) => {
-  viewportCamera = arg;
-};
 export let defaultViewportCamera: THREE.PerspectiveCamera;
 
 export let composer: EffectComposer;
 export let renderPass: RenderPass;
+
+export const getViewportCamera = () => renderPass.camera;
+export const setViewportCamera = (arg: THREE.Camera) => {
+  console.log(arg.id);
+  renderPass.camera = arg;
+};
 
 export let outlinePass: OutlinePass;
 
@@ -71,8 +73,8 @@ export const viewportInit = (targetClass = viewportDivClassName) => {
     const fov = 60;
     const near = 0.2;
     const far = 400.0;
-    viewportCamera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-    defaultViewportCamera = viewportCamera;
+    defaultViewportCamera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+    const viewportCamera = defaultViewportCamera;
     viewportCamera.position.set(10, 10, 10);
     viewportCamera.lookAt(0, 0, 0);
     controls = new OrbitControls(viewportCamera, renderer.domElement);
