@@ -5,6 +5,9 @@ import {
 } from "./constants";
 import { getHelper } from "./utils";
 
+export let selectedItems = [] as THREE.Object3D[];
+export const isAnySelected = () => !!selectedItems.length;
+
 /**
  * Highlights passed objects
  * @param args The 3D Objects to highlight
@@ -15,9 +18,9 @@ export const highlightObjects = (args: THREE.Object3D[]) => {
 
 /**
  * Selects 3D Object(s) programmatically
- * 
+ *
  * Strict mode means unselect everything not in the list provided
- * 
+ *
  * @param arg The 3D Object to Select
  */
 export const selectObject3D = (
@@ -32,7 +35,7 @@ export const selectObject3D = (
       NonSelectionTypes.includes((arg as THREE.Object3D).type))
   ) {
     if (strict) {
-      window.selectedItems = [];
+      selectedItems = [];
       window.outlinePass.selectedObjects = [];
     }
     return;
@@ -49,10 +52,10 @@ export const selectObject3D = (
   });
 
   if (strict) {
-    window.selectedItems = arg;
+    selectedItems = arg;
     window.outlinePass.selectedObjects = arg;
   } else {
-    window.selectedItems = window.selectedItems.concat(arg);
+    selectedItems = selectedItems.concat(arg);
     window.outlinePass.selectedObjects =
       window.outlinePass.selectedObjects.concat(arg);
   }
@@ -74,9 +77,9 @@ export const unselectObject3D = (args: THREE.Object3D[] | THREE.Object3D) => {
 
   /** Removing from selected and outlined */
   args.forEach((arg) => {
-    if (!window.selectedItems) return;
-    const findIndex0 = window.selectedItems.findIndex((a) => a.id === arg.id);
-    findIndex0 !== -1 && window.selectedItems.splice(findIndex0, 1);
+    if (!selectedItems) return;
+    const findIndex0 = selectedItems.findIndex((a) => a.id === arg.id);
+    findIndex0 !== -1 && selectedItems.splice(findIndex0, 1);
 
     const findIndex1 = window.outlinePass.selectedObjects.findIndex(
       (a) => a.id === arg.id
@@ -86,20 +89,16 @@ export const unselectObject3D = (args: THREE.Object3D[] | THREE.Object3D) => {
   });
 };
 
-export const numSelected = (
-  selectedItems: THREE.Object3D[] = window.selectedItems
-) => {
-  const actSelected = selectedItems.filter((x) =>
+export const numSelected = (selected: THREE.Object3D[] = selectedItems) => {
+  const actSelected = selected.filter((x) =>
     ViewportInteractionAllowed.includes(x.type)
   );
 
   return actSelected.length;
 };
 
-export const properSelected = (
-  selectedItems: THREE.Object3D[] = window.selectedItems
-) => {
-  const actSelected = selectedItems.filter((x) =>
+export const properSelected = (selected: THREE.Object3D[] = selectedItems) => {
+  const actSelected = selected.filter((x) =>
     ViewportInteractionAllowed.includes(x.type)
   );
 

@@ -11,6 +11,7 @@ import * as THREE from "three";
 import { commitTransaction, startTransaction } from "./transactions";
 import { addAnimationStep } from "./animations";
 import { randomColor } from "./utils";
+import { defaultMaterial } from "./materials";
 
 /**
  * This Page Keeps the Model Loaders,
@@ -70,70 +71,70 @@ export const loadPrimitive = ({
     switch (modelPath) {
       case Primitives.cube:
         geometry = new THREE.BoxGeometry(3, 3, 3);
-        mesh = new THREE.Mesh(geometry, window.defaultMaterial);
+        mesh = new THREE.Mesh(geometry, defaultMaterial);
         break;
       case Primitives.sphere:
         geometry = new THREE.SphereGeometry(2, 32, 16);
-        mesh = new THREE.Mesh(geometry, window.defaultMaterial);
+        mesh = new THREE.Mesh(geometry, defaultMaterial);
         break;
       case Primitives.cylinder:
         geometry = new THREE.CylinderGeometry(2, 2, 4, 32);
-        mesh = new THREE.Mesh(geometry, window.defaultMaterial);
+        mesh = new THREE.Mesh(geometry, defaultMaterial);
         break;
       case Primitives.plane:
         geometry = new THREE.PlaneGeometry(2, 2);
-        mesh = new THREE.Mesh(geometry, window.defaultMaterial);
+        mesh = new THREE.Mesh(geometry, defaultMaterial);
         break;
       case Primitives.torus:
         geometry = new THREE.TorusGeometry(2, 0.5, 16, 100);
-        mesh = new THREE.Mesh(geometry, window.defaultMaterial);
+        mesh = new THREE.Mesh(geometry, defaultMaterial);
         break;
       case Primitives.cone:
         geometry = new THREE.ConeGeometry(3, 4, 32);
-        mesh = new THREE.Mesh(geometry, window.defaultMaterial);
+        mesh = new THREE.Mesh(geometry, defaultMaterial);
         break;
       case Primitives.capsule:
         geometry = new THREE.CapsuleGeometry(1, 1, 4, 8);
-        mesh = new THREE.Mesh(geometry, window.defaultMaterial);
+        mesh = new THREE.Mesh(geometry, defaultMaterial);
         break;
       case Primitives.icosahedron:
         geometry = new THREE.IcosahedronGeometry(2, 1);
-        mesh = new THREE.Mesh(geometry, window.defaultMaterial);
+        mesh = new THREE.Mesh(geometry, defaultMaterial);
         break;
     }
   } else {
     switch (modelPath) {
       case Primitives.cube:
         geometry = new THREE.BoxBufferGeometry(3, 3, 3);
-        mesh = new THREE.Mesh(geometry, window.defaultMaterial);
+        mesh = new THREE.Mesh(geometry, defaultMaterial);
         break;
       case Primitives.sphere:
         geometry = new THREE.SphereBufferGeometry(2, 32, 16);
-        mesh = new THREE.Mesh(geometry, window.defaultMaterial);
+        mesh = new THREE.Mesh(geometry, defaultMaterial);
         break;
       case Primitives.cylinder:
         geometry = new THREE.CylinderBufferGeometry(2, 2, 4, 32);
-        mesh = new THREE.Mesh(geometry, window.defaultMaterial);
+        mesh = new THREE.Mesh(geometry, defaultMaterial);
         break;
       case Primitives.plane:
         geometry = new THREE.PlaneBufferGeometry(2, 2);
-        mesh = new THREE.Mesh(geometry, window.defaultMaterial);
+        mesh = new THREE.Mesh(geometry, defaultMaterial);
         break;
       case Primitives.torus:
         geometry = new THREE.TorusBufferGeometry(2, 0.5, 16, 100);
-        mesh = new THREE.Mesh(geometry, window.defaultMaterial);
+        mesh = new THREE.Mesh(geometry, defaultMaterial);
         break;
       case Primitives.cone:
         geometry = new THREE.ConeBufferGeometry(3, 4, 32);
-        mesh = new THREE.Mesh(geometry, window.defaultMaterial);
+        mesh = new THREE.Mesh(geometry, defaultMaterial);
         break;
       case Primitives.capsule:
         geometry = new THREE.CapsuleBufferGeometry(1, 1, 4, 8);
-        mesh = new THREE.Mesh(geometry, window.defaultMaterial);
+        mesh = new THREE.Mesh(geometry, defaultMaterial);
         break;
       case Primitives.icosahedron:
         geometry = new THREE.IcosahedronBufferGeometry(2, 1);
-        mesh = new THREE.Mesh(geometry, window.defaultMaterial);
+        mesh = new THREE.Mesh(geometry, defaultMaterial);
         break;
     }
   }
@@ -149,18 +150,17 @@ export const loadPrimitive = ({
 
     // Record Transaction
     if (asTransaction) {
-      startTransaction(ViewportEventType.loadMesh);
       const pendingMeshTransaction = {
         type: ViewportEventType.loadMesh,
         objectID: mesh.id,
         initials: {
           path: modelPath,
           method: buffer
-            ? MeshLoadMethod.loadPrimitiveBuffer
-            : MeshLoadMethod.loadPrimitive,
+          ? MeshLoadMethod.loadPrimitiveBuffer
+          : MeshLoadMethod.loadPrimitive,
         },
       };
-      window.pendingTransactions.push(pendingMeshTransaction);
+      startTransaction(ViewportEventType.loadMesh, [pendingMeshTransaction]);
       commitTransaction();
     }
   }
@@ -210,7 +210,6 @@ export const loadGLTFModel = ({
 
       if (asTransaction) {
         // Record Transaction
-        startTransaction(ViewportEventType.loadMesh);
         const pendingMeshTransaction = {
           type: ViewportEventType.loadMesh,
           objectID: gltf.scene.id,
@@ -219,7 +218,7 @@ export const loadGLTFModel = ({
             method: MeshLoadMethod.loadGLTF,
           },
         };
-        window.pendingTransactions.push(pendingMeshTransaction);
+        startTransaction(ViewportEventType.loadMesh, [pendingMeshTransaction]);
         commitTransaction();
       }
     });
@@ -261,7 +260,6 @@ export const loadFBXModel = ({
 
       // Record Transaction
       if (asTransaction) {
-        startTransaction(ViewportEventType.loadMesh);
         const pendingMeshTransaction = {
           type: ViewportEventType.loadMesh,
           objectID: fbx.id,
@@ -270,7 +268,7 @@ export const loadFBXModel = ({
             method: MeshLoadMethod.loadFBX,
           },
         };
-        window.pendingTransactions.push(pendingMeshTransaction);
+        startTransaction(ViewportEventType.loadMesh, [pendingMeshTransaction]);
         commitTransaction();
       }
     });
@@ -366,7 +364,6 @@ export const loadLight = ({
 
     // Record Transaction
     if (asTransaction) {
-      startTransaction(ViewportEventType.loadMesh);
       const pendingMeshTransaction = {
         type: ViewportEventType.loadMesh,
         objectID: light.id,
@@ -375,7 +372,7 @@ export const loadLight = ({
           method: MeshLoadMethod.loadLight,
         },
       };
-      window.pendingTransactions.push(pendingMeshTransaction);
+      startTransaction(ViewportEventType.loadMesh, [pendingMeshTransaction]);
       commitTransaction();
     }
   }
@@ -440,7 +437,6 @@ export const loadCamera = ({
 
     // Record Transaction
     if (asTransaction) {
-      startTransaction(ViewportEventType.loadMesh);
       const pendingMeshTransaction = {
         type: ViewportEventType.loadMesh,
         objectID: camera.id,
@@ -449,7 +445,7 @@ export const loadCamera = ({
           method: MeshLoadMethod.loadCamera,
         },
       };
-      window.pendingTransactions.push(pendingMeshTransaction);
+      startTransaction(ViewportEventType.loadMesh, [pendingMeshTransaction]);
       commitTransaction();
     }
   }

@@ -1,6 +1,8 @@
 import { Group, Vector3 } from "three";
 import { WorkingAxes } from "../enums";
 import { MousePosition } from "../interfaces";
+import { mousePosition, ndcMousePosition } from "./mouse";
+import { isAnySelected, selectedItems } from "./selection";
 
 /**
  * Misc Utilities,
@@ -17,7 +19,7 @@ import { MousePosition } from "../interfaces";
 export const doForSelectedItems = (
   action: (selectedItem: THREE.Object3D) => void
 ) => {
-  if (window.selectedItems.length) window.selectedItems.forEach(action);
+  if (isAnySelected()) selectedItems.forEach(action);
 };
 
 /**
@@ -33,26 +35,26 @@ export const keepTrackOfCursor = (mouseMoveEvent: MouseEvent) => {
     const { width, height } = document.getElementById(
       "three-canvas"
     ) as HTMLCanvasElement;
-    window.mousePosition.x += mouseMoveEvent.movementX;
-    window.mousePosition.y += mouseMoveEvent.movementY;
-    if (window.mousePosition.x > width + radius) {
-      window.mousePosition.x = -radius;
+    mousePosition.x += mouseMoveEvent.movementX;
+    mousePosition.y += mouseMoveEvent.movementY;
+    if (mousePosition.x > width + radius) {
+      mousePosition.x = -radius;
     }
-    if (window.mousePosition.y > height + radius) {
-      window.mousePosition.y = -radius;
+    if (mousePosition.y > height + radius) {
+      mousePosition.y = -radius;
     }
-    if (window.mousePosition.x < -radius) {
-      window.mousePosition.x = width + radius;
+    if (mousePosition.x < -radius) {
+      mousePosition.x = width + radius;
     }
-    if (window.mousePosition.y < -radius) {
-      window.mousePosition.y = height + radius;
+    if (mousePosition.y < -radius) {
+      mousePosition.y = height + radius;
     }
   } else {
     /**
      * Update Normally
      */
-    window.mousePosition.x = mouseMoveEvent.pageX;
-    window.mousePosition.y = mouseMoveEvent.pageY;
+    mousePosition.x = mouseMoveEvent.pageX;
+    mousePosition.y = mouseMoveEvent.pageY;
   }
 };
 
@@ -88,14 +90,14 @@ export const getHelper = (arg: THREE.Object3D) => {
 
 /**
  *
- * @param ndcMousePosition Optional: The Normalized Device Coordinates / the normalized mouse position.
+ * @param ndc Optional: The Normalized Device Coordinates / the normalized mouse position.
  *
  * If not given assumes the current one.
  * @returns The Vector3 equivalent in the 3D world.
  */
-export const getMousePositionIn3D = (ndcMousePosition?: MousePosition) => {
-  if (!ndcMousePosition) ndcMousePosition = window.ndcMousePosition;
-  const coords = new Vector3(ndcMousePosition.x, ndcMousePosition.y, 0);
+export const getMousePositionIn3D = (ndc?: MousePosition) => {
+  if (!ndc) ndc = ndcMousePosition;
+  const coords = new Vector3(ndc.x, ndc.y, 0);
   const origin = new Vector3();
   const direction = new Vector3(0, 0, -1);
   origin.setFromMatrixPosition(window.viewportCamera.matrixWorld);

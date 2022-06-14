@@ -8,6 +8,7 @@ import {
   ViewportEventAxesInfo,
   ViewportEventMeshInfo,
 } from "./events";
+import { selectedItems, selectObject3D } from "./selection";
 import { doForSelectedItems } from "./utils";
 import { isType } from "./validity";
 
@@ -54,6 +55,9 @@ export interface PendingTransaction {
   initials: PendingTransactionInitials;
 }
 
+export let pendingTransactions = [] as PendingTransaction[];
+export const isTransactionPending = () => !!pendingTransactions.length;
+
 /**
  * Properly gets rid of a mesh
  * @param mesh The Mesh to Remove
@@ -92,11 +96,11 @@ export const removeMesh = (mesh: THREE.Object3D) => {
  * Removes the currently selected mesh.
  */
 export const removeSelectedMesh = () => {
-  if (!window.selectedItems.length) return;
+  if (!selectedItems.length) return;
   doForSelectedItems((x) => {
     removeMesh(x);
   });
-  window.selectedItems = [];
+  selectObject3D(null, true);
 };
 
 /**
@@ -106,8 +110,12 @@ export const removeSelectedMesh = () => {
  * Saves necessary data that'll be used during commiting
  * and sets a new transaction of the given type in motion.
  */
-export const startTransaction = (type: ViewportEventType) => {
-  window.pendingTransactions = [];
+export const startTransaction = (
+  type: ViewportEventType,
+  pending: PendingTransaction[] | null = null
+) => {
+  pendingTransactions = pending ? pending : [];
+  if (isTransactionPending()) return;
   if (type === ViewportEventType.loadMesh) return;
   doForSelectedItems((item) => {
     let initials: PendingTransactionInitials = null;
@@ -152,7 +160,7 @@ export const startTransaction = (type: ViewportEventType) => {
         break;
     }
 
-    window.pendingTransactions.push({
+    pendingTransactions.push({
       type,
       objectID: item.id,
       initials,
@@ -169,7 +177,7 @@ export const startTransaction = (type: ViewportEventType) => {
  *
  */
 export const commitTransaction = () => {
-  window.pendingTransactions.forEach((pendingTransaction) => {
+  pendingTransactions.forEach((pendingTransaction) => {
     const type = pendingTransaction.type;
 
     let info: ViewportEventMeshInfo | ViewportEventAxesInfo | null = null;
@@ -248,7 +256,7 @@ export const commitTransaction = () => {
     }
   });
 
-  window.pendingTransactions = [];
+ pendingTransactions = [];
 };
 
 /**
@@ -263,7 +271,7 @@ export const commitTransaction = () => {
  */
 export const rollbackTransaction = () => {
   // Do not rollback mid transaction
-  if (window.pendingTransactions.length) return;
+  if (pendingTransactions.length) return;
   const ve = popVE();
   if (ve) reverseVE(ve);
 };

@@ -1,12 +1,13 @@
 import { testDriver } from "./drivers";
+import { selectedItems } from "./selection";
 
 export const isSelectedMesh = () =>
-  window.selectedItems.length &&
-  window.selectedItems.filter((x) => ["Mesh"].includes(x.type)).length;
+  selectedItems.length &&
+  selectedItems.filter((x) => ["Mesh"].includes(x.type)).length;
 
 export const isSelectedType = (...args: string[]) =>
-  window.selectedItems.length &&
-  window.selectedItems.filter((x) => args.includes(x.type)).length;
+  selectedItems.length &&
+  selectedItems.filter((x) => args.includes(x.type)).length;
 
 export const isMesh = (arg: any) =>
   arg?.type && typeof arg.type === "string" && ["Mesh"].includes(arg.type);

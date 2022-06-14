@@ -1,5 +1,6 @@
 import { FunctionComponent, useEffect, useState } from "react";
 import { ViewportEventType } from "../../enums";
+import { selectedItems } from "../../utils/selection";
 import { commitTransaction, startTransaction } from "../../utils/transactions";
 import NumericReactiveInput from "../NumericReactiveInput/NumericReactiveInput";
 
@@ -29,7 +30,7 @@ const TransformPropertyMenu: FunctionComponent<TransformPropertyMenuProps> = ({
   useEffect(() => {
     if (!isHidden)
       selectedItemInterval = setInterval(
-        () => setselectedItem(window.selectedItems[0]),
+        () => setselectedItem(selectedItems[0]),
         40
       );
     return () => {

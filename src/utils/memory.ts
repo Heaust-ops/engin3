@@ -1,5 +1,5 @@
 import { ViewportEventType } from "../enums";
-import { DriverInfo, ViewportEvent } from "./events";
+import { DriverInfo, setVEHistory, ViewportEvent, viewportEventHistory } from "./events";
 
 /**
  * When the number of events gets large,
@@ -23,7 +23,7 @@ import { DriverInfo, ViewportEvent } from "./events";
  * @returns true for success, false for failure
  */
 export const coalesceVEHistory = (length: number = 50, start: number = 0) => {
-  const presentVEStack = window.viewportEventHistory;
+  const presentVEStack = viewportEventHistory;
   if (start + length > presentVEStack.length) return false;
   const covered = [] as string[];
   const deleted = [] as number[];
@@ -56,9 +56,9 @@ export const coalesceVEHistory = (length: number = 50, start: number = 0) => {
   const result = [] as ViewportEvent[];
 
   try {
-    for (let i = 0; i < window.viewportEventHistory.length; i++) {
+    for (let i = 0; i < viewportEventHistory.length; i++) {
       if (i < start || i >= start + length) {
-        result.push(window.viewportEventHistory[i]);
+        result.push(viewportEventHistory[i]);
         continue;
       }
       if (newVEStack.length) result.push(newVEStack.pop()!);
@@ -67,6 +67,6 @@ export const coalesceVEHistory = (length: number = 50, start: number = 0) => {
     return false;
   }
 
-  window.viewportEventHistory = result;
+  setVEHistory(result);
   return true;
 };

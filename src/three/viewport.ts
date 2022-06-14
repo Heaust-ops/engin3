@@ -7,16 +7,12 @@ import { ViewportModes } from "../enums";
 import { doForSelectedItems } from "../utils/utils";
 import { selectObject3D, unselectObject3D } from "../utils/selection";
 import { performAnimationStep } from "../utils/animations";
+import { mousePosition, ndcMousePosition } from "../utils/mouse";
 
 var scene = new THREE.Scene();
 
-window.selectedItems = [];
 window.multiselect = false;
 window.scene = scene;
-window.defaultMaterial = new THREE.MeshStandardMaterial({
-  color: 0x4073dc,
-  side: THREE.DoubleSide,
-});
 
 export const viewportInit = (targetClass = "viewport") => {
   // Only run when viewport isn't already initialised
@@ -74,22 +70,19 @@ export const viewportInit = (targetClass = "viewport") => {
     let rc = new THREE.Raycaster();
 
     renderer.domElement.onmousemove = () => {
-      window.ndcMousePosition = {
-        x:
-          ((window.mousePosition.x -
-            renderer.domElement.getBoundingClientRect().left) /
-            Cwidth()) *
-            2 -
-          1,
-        y:
-          -(
-            (window.mousePosition.y -
-              renderer.domElement.getBoundingClientRect().top) /
-            Cheight()
-          ) *
-            2 +
-          1,
-      };
+      ndcMousePosition.x =
+        ((mousePosition.x - renderer.domElement.getBoundingClientRect().left) /
+          Cwidth()) *
+          2 -
+        1;
+
+      ndcMousePosition.y =
+        -(
+          (mousePosition.y - renderer.domElement.getBoundingClientRect().top) /
+          Cheight()
+        ) *
+          2 +
+        1;
     };
 
     const CheckRC = (
@@ -98,11 +91,7 @@ export const viewportInit = (targetClass = "viewport") => {
       onEmpty = () => {}
     ) => {
       rc.setFromCamera(
-        new THREE.Vector3(
-          window.ndcMousePosition.x,
-          window.ndcMousePosition.y,
-          0
-        ),
+        new THREE.Vector3(ndcMousePosition.x, ndcMousePosition.y, 0),
         camera
       );
       let intersects = rc.intersectObjects(window.scene.children);
@@ -197,7 +186,7 @@ export const viewportInit = (targetClass = "viewport") => {
             }
           },
           () => {
-            window.selectedItems = [];
+            selectObject3D(null, true);
             window.outlinePass.selectedObjects = [];
           }
         );

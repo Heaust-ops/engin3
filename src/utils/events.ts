@@ -48,12 +48,17 @@ export interface ViewportEventMeshInfo {
   method: MeshLoadMethod;
 }
 
+export let viewportEventHistory = [] as ViewportEvent[];
+export const setVEHistory = (arg: ViewportEvent[]) => {
+  viewportEventHistory = arg;
+};
+
 /**
  * Pushes a viewport event onto the event history stack
  * @param arg The Viewport Event
  */
 export const addVE = (arg: ViewportEvent) => {
-  window.viewportEventHistory.push(arg);
+  viewportEventHistory.push(arg);
 };
 
 /**
@@ -89,17 +94,15 @@ export const getLatestVE = (
   before?: number | ViewportEvent | null,
   filter?: (arg: ViewportEvent) => boolean
 ) => {
-  if (!before) before = window.viewportEventHistory.length;
+  if (!before) before = viewportEventHistory.length;
   if (!type)
     // Return Latest if no type
-    return window.viewportEventHistory[window.viewportEventHistory.length - 1];
+    return viewportEventHistory[viewportEventHistory.length - 1];
 
   // Calculate index if before is in the form of VE type
   if (typeof before !== "number") {
-    for (let i = window.viewportEventHistory.length - 1; i > -1; i--) {
-      if (
-        window.viewportEventHistory[i].type === (before as ViewportEvent).type
-      )
+    for (let i = viewportEventHistory.length - 1; i > -1; i--) {
+      if (viewportEventHistory[i].type === (before as ViewportEvent).type)
         before = i;
     }
 
@@ -109,9 +112,8 @@ export const getLatestVE = (
 
   // Calculate the Event before a certain index
   for (let i = before - 1; i > -1; i--) {
-    if (filter && !filter(window.viewportEventHistory[i])) continue;
-    if (window.viewportEventHistory[i].type === type)
-      return window.viewportEventHistory[i];
+    if (filter && !filter(viewportEventHistory[i])) continue;
+    if (viewportEventHistory[i].type === type) return viewportEventHistory[i];
   }
 
   return null;
@@ -150,15 +152,15 @@ export const getLatestVEIndex = (
   before?: number | ViewportEvent | null,
   filter?: (arg: ViewportEvent) => boolean
 ) => {
-  if (!before) before = window.viewportEventHistory.length;
+  if (!before) before = viewportEventHistory.length;
   if (!type)
     // Return Latest if no type
-    return window.viewportEventHistory.length - 1;
+    return viewportEventHistory.length - 1;
 
   // Calculate index if before is in the form of VE type
   if (typeof before !== "number") {
-    for (let i = window.viewportEventHistory.length - 1; i > -1; i--) {
-      if (window.viewportEventHistory[i].type === type) before = i;
+    for (let i = viewportEventHistory.length - 1; i > -1; i--) {
+      if (viewportEventHistory[i].type === type) before = i;
     }
 
     // If no event of the type before has occured
@@ -167,8 +169,8 @@ export const getLatestVEIndex = (
 
   // Calculate the Event before a certain index
   for (let i = before - 1; i > -1; i--) {
-    if (filter && !filter(window.viewportEventHistory[i])) continue;
-    if (window.viewportEventHistory[i].type === type) return i;
+    if (filter && !filter(viewportEventHistory[i])) continue;
+    if (viewportEventHistory[i].type === type) return i;
   }
 
   return null;
@@ -193,7 +195,7 @@ export const reloadFromVE = (
   asTransaction = false
 ) => {
   try {
-    if (typeof ve === "number") ve = window.viewportEventHistory[ve];
+    if (typeof ve === "number") ve = viewportEventHistory[ve];
   } catch {
     return false;
   }
@@ -241,9 +243,9 @@ export const reloadFromVE = (
       // Replace previous object's Ids with the new one's throughout all
       // so that further undo doesn't break when reviving
       if ((ve as ViewportEvent).type === ViewportEventType.deleteMesh) {
-        for (let i = 0; i < window.viewportEventHistory.length; i++)
-          if (window.viewportEventHistory[i].info.objectID === info.objectID)
-            window.viewportEventHistory[i].info.objectID = mesh.id;
+        for (let i = 0; i < viewportEventHistory.length; i++)
+          if (viewportEventHistory[i].info.objectID === info.objectID)
+            viewportEventHistory[i].info.objectID = mesh.id;
       }
     },
     asTransaction,
@@ -263,7 +265,7 @@ export const reloadFromVE = (
  */
 export const reverseVE = (ve: ViewportEvent | number) => {
   try {
-    if (typeof ve === "number") ve = window.viewportEventHistory[ve];
+    if (typeof ve === "number") ve = viewportEventHistory[ve];
   } catch {
     return false;
   }
@@ -331,4 +333,4 @@ export const reverseVE = (ve: ViewportEvent | number) => {
   }
 };
 
-export const popVE = () => window.viewportEventHistory.pop() ?? null;
+export const popVE = () => viewportEventHistory.pop() ?? null;

@@ -8,6 +8,7 @@ import { ViewportEventType, ViewportModes, WorkingAxes } from "./enums";
 import { isSelectedType } from "./utils/validity";
 import {
   commitTransaction,
+  isTransactionPending,
   rollbackTransaction,
   startTransaction,
 } from "./utils/transactions";
@@ -24,9 +25,11 @@ import { handleHotkeys } from "./utils/viewportHotkeys";
 import TransformsMenu from "./components/TransformsMenu/TransformsMenu";
 import { Vector3 } from "three";
 import { grab, rotate } from "./utils/transforms";
-import { numSelected } from "./utils/selection";
+import { numSelected, selectedItems } from "./utils/selection";
 import { coalesceVEHistory } from "./utils/memory";
 import SidePanel from "./components/SidePanel/SidePanel";
+import { ndcMousePosition } from "./utils/mouse";
+import { viewportEventHistory } from "./utils/events";
 
 /**
  * Because Writing (ev) => ev.preventDefault();
@@ -73,8 +76,8 @@ const App = () => {
     eventHistoryBroomPoller = setInterval(() => {
       /** Coalesce first half of events if event history is large */
       /** See memory.ts */
-      if (window.viewportEventHistory.length > 10000)
-        coalesceVEHistory(window.viewportEventHistory.length / 2);
+      if (viewportEventHistory.length > 10000)
+        coalesceVEHistory(viewportEventHistory.length / 2);
     }, 60000 /** Every Minute */);
 
     return () => {
@@ -119,7 +122,7 @@ const App = () => {
       [ViewportModes.grab, ViewportModes.rotate, ViewportModes.scale].includes(
         mode
       ) &&
-      !window.pendingTransactions.length
+      !isTransactionPending()
     ) {
       document.getElementById("three-canvas")?.requestPointerLock();
       startTransaction(mode as unknown as ViewportEventType);
@@ -129,17 +132,17 @@ const App = () => {
      * Grab and Rotate Logic
      */
     if ([ViewportModes.grab, ViewportModes.rotate].includes(mode)) {
-      let prevPos = getMousePositionIn3D(window.ndcMousePosition);
-      if (!window.selectedItems) return;
+      let prevPos = getMousePositionIn3D(ndcMousePosition);
+      if (!selectedItems) return;
 
       /**
        * We using an interval instead of mouse move to get a more accurate
        * direction vector of the moved cursor.
        */
       mouseDeltaInterval = setInterval(() => {
-        const currentPos = getMousePositionIn3D(window.ndcMousePosition);
+        const currentPos = getMousePositionIn3D(ndcMousePosition);
         const delta = currentPos.clone().sub(prevPos);
-        if (window.selectedItems) {
+        if (selectedItems) {
           /**
            * Handle Grab
            */

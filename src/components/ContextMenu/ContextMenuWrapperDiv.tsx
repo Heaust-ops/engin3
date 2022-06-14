@@ -6,6 +6,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { mousePosition } from "../../utils/mouse";
 import ContextMenu, { ContextMenuItem } from "./ContextMenu";
 
 export interface ContextMenuPropsWithBindings {
@@ -49,8 +50,8 @@ const ContextMenuWrapperDiv: FunctionComponent<ContextMenuWrapperDivProps> = ({
         // Show menu on the combination
         if (keyStack.join("").toLowerCase() === el)
           showAddContextMenu(
-            window.mousePosition.x,
-            window.mousePosition.y,
+            mousePosition.x,
+            mousePosition.y,
             menus.hotkeys![el]
           );
       });
@@ -88,8 +89,8 @@ const ContextMenuWrapperDiv: FunctionComponent<ContextMenuWrapperDivProps> = ({
 
           if (menus.contextMenu) {
             showAddContextMenu(
-              window.mousePosition.x,
-              window.mousePosition.y,
+              mousePosition.x,
+              mousePosition.y,
               menus.contextMenu
             );
           }

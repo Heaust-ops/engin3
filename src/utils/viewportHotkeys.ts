@@ -6,12 +6,13 @@ import {
   ViewportInteractionAllowed,
 } from "./constants";
 import { getLatestVE, reloadFromVE } from "./events";
-import { properSelected } from "./selection";
+import { properSelected, selectedItems } from "./selection";
 import {
   rollbackTransaction,
   startTransaction,
   removeSelectedMesh,
   commitTransaction,
+  isTransactionPending,
 } from "./transactions";
 import { doForSelectedItems, makeGroup, unmakeGroup } from "./utils";
 import { isSelectedType } from "./validity";
@@ -164,7 +165,7 @@ export const handleHotkeys = (
      *
      */
     case "g":
-      if (!window.selectedItems.length) break;
+      if (!selectedItems.length) break;
       if (isSelectedType(...ViewportInteractionAllowed))
         window.viewportMode === ViewportModes.grab
           ? setmode(ViewportModes.navigate)
@@ -176,7 +177,7 @@ export const handleHotkeys = (
      *
      */
     case "r":
-      if (!window.selectedItems.length) break;
+      if (!selectedItems.length) break;
       if (isSelectedType(...ViewportInteractionAllowed))
         window.viewportMode === ViewportModes.rotate
           ? setmode(ViewportModes.navigate)
@@ -188,7 +189,7 @@ export const handleHotkeys = (
      *
      */
     case "s":
-      if (!window.selectedItems.length) break;
+      if (!selectedItems.length) break;
       if (isSelectedType(...ViewportInteractionAllowed))
         window.viewportMode === ViewportModes.scale
           ? setmode(ViewportModes.navigate)
@@ -199,8 +200,8 @@ export const handleHotkeys = (
      * Shift + D: Duplicates Selected
      */
     case "shiftd":
-      if (!window.selectedItems.length) break;
-      if (window.pendingTransactions.length) commitTransaction();
+      if (!selectedItems.length) break;
+      if (isTransactionPending()) commitTransaction();
       if (isSelectedType(...ViewportInteractionAllowed)) {
         doForSelectedItems((x) => {
           const ve = getLatestVE(
@@ -229,7 +230,7 @@ export const handleHotkeys = (
      * Used to set the target of directional light
      */
     case "b":
-      const selected = properSelected(window.selectedItems);
+      const selected = properSelected();
 
       /**
        * Set the target of directional light
@@ -255,7 +256,7 @@ export const handleHotkeys = (
        * Group Objects
        */
       if (selected.length > 1) {
-        makeGroup(window.selectedItems);
+        makeGroup(selectedItems);
         return;
       }
 

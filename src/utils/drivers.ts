@@ -5,7 +5,8 @@ import {
   removeAnimationStep,
   updateAnimationStep,
 } from "./animations";
-import { DriverInfo, getLatestVE, ViewportEvent } from "./events";
+import { addVE, DriverInfo, getLatestVE, ViewportEvent } from "./events";
+import { mousePosition, ndcMousePosition } from "./mouse";
 import { isSyntaxOk } from "./validity";
 
 /**
@@ -137,9 +138,9 @@ const prepareDriver = (driver: Driver) => {
     const preparedExpression = `
         const own = ${driver.getter()};
         const te = ${timeElapsed};
-        const [mx, my] = [${window.mousePosition.x}, ${window.mousePosition.y}];
+        const [mx, my] = [${mousePosition.x}, ${mousePosition.y}];
         const [ndcx, ndcy] = 
-        [${window.ndcMousePosition.x}, ${window.ndcMousePosition.y}];
+        [${ndcMousePosition.x}, ${ndcMousePosition.y}];
         ${DriverConstants}
         return(${driver.expression});
         `;
@@ -198,7 +199,7 @@ export const applyDriver = (driver: Driver, asTransaction: boolean = true) => {
     (ve.info as DriverInfo).animationId = addAnimationStep(
       animationFunction as AnimationFunction
     );
-    if (asTransaction) window.viewportEventHistory.push(ve);
+    if (asTransaction) addVE(ve);
     return (ve.info as DriverInfo).animationId;
   }
 
@@ -209,7 +210,7 @@ export const applyDriver = (driver: Driver, asTransaction: boolean = true) => {
     driver.animationId,
     animationFunction as AnimationFunction
   );
-  if (asTransaction) window.viewportEventHistory.push(ve);
+  if (asTransaction) addVE(ve);
 
   return (ve.info as DriverInfo).animationId;
 };
@@ -243,7 +244,7 @@ export const deleteDriver = (
       finalExpression: null,
     },
   } as ViewportEvent;
-  if (asTransaction) window.viewportEventHistory.push(ve);
+  if (asTransaction) addVE(ve);
   return true;
 };
 
