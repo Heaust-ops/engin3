@@ -1,277 +1,116 @@
-import { Camera } from "three";
-import { Vector3 } from "three";
-import { LineSegments } from "three";
-import { Color } from "three";
-import { LineBasicMaterial } from "three";
-import { BufferGeometry } from "three";
-import { Float32BufferAttribute } from "three";
+import {
+  CircleBufferGeometry,
+  Color,
+  ConeBufferGeometry,
+  DoubleSide,
+  Group,
+  Mesh,
+} from "three";
+import { MeshBasicMaterial } from "three";
 
-/**
- *
- *
- * THIS IS CAMERA HELPER CODE TAKEN STRAIGHT FROM
- * THE THREEJS REPO
- *
- * IT HAS BEEN TYPESCRIPTIFIED AND SLIGHTLY MODIFIED
- * TO ALLOW FOR BETTER CUSTOMIZATION.
- *
- *
- */
-
-const _vector = /*@__PURE__*/ new Vector3();
-const _camera = /*@__PURE__*/ new Camera();
-
-/**
- *	- shows frustum, line of sight and up of the camera
- *	- suitable for fast updates
- * 	- based on frustum visualization in lightgl.js shadowmap example
- *		https://github.com/evanw/lightgl.js/blob/master/tests/shadowmap.html
- */
-
-interface ColorOptions {
-  colorNearFrustum: Color | null;
-  colorFarFrustum: Color | null;
-  colorSideFrustum: Color | null;
-  colorCone: Color | null;
-  colorUp: Color | null;
-  colorTarget: Color | null;
-  colorCross: Color | null;
+interface Colors {
+  cone: THREE.Color | null;
+  triangle: THREE.Color | null;
+  frustum: THREE.Color | null;
 }
-
-interface ColorOptionsArg {
-  colorNearFrustum?: Color | null;
-  colorFarFrustum?: Color | null;
-  colorSideFrustum?: Color | null;
-  colorCone?: Color | null;
-  colorUp?: Color | null;
-  colorTarget?: Color | null;
-  colorCross?: Color | null;
-}
-
-class CameraHelper extends LineSegments {
-  colorOptions: ColorOptions;
+class CameraHelper extends Group {
   camera: THREE.Camera;
-  pointMap: any;
+  colors: Colors;
 
   constructor(
     camera: THREE.Camera,
-    {
-      colorNearFrustum = new Color(0xffaa00),
-      colorFarFrustum = new Color(0xffaa00),
-      colorSideFrustum = new Color(0xffaa00),
-      colorCone = new Color(0xff0000),
-      colorUp = new Color(0x00aaff),
-      colorTarget = new Color(0xffffff),
-      colorCross = new Color(0x333333),
-    } = {} as ColorOptionsArg
+    size: number = 1,
+    colors: {
+      cone: THREE.Color | number | null;
+      triangle: THREE.Color | number | null;
+      frustum: THREE.Color | number | null;
+    } = {
+      cone: 0xFF6C37,
+      triangle: 0x16949A,
+      frustum: 0xFF6C37,
+    }
   ) {
-    const geometry = new BufferGeometry();
-    const material = new LineBasicMaterial({
-      color: 0xffffff,
-      vertexColors: true,
+    const coneGeo = new ConeBufferGeometry(
+      ((camera as THREE.PerspectiveCamera).near * size * 2) / 3,
+      (camera as THREE.PerspectiveCamera).near * size,
+      4,
+      1,
+      true
+    );
+    const material = new MeshBasicMaterial({
+      wireframe: true,
+      fog: false,
       toneMapped: false,
+      side: DoubleSide,
     });
 
-    const vertices = [] as number[];
-    const colors = [] as number[];
+    coneGeo.rotateY(Math.PI / 4);
+    coneGeo.rotateX(Math.PI / 2);
 
-    const pointMap = {} as { [name: string]: number[] };
+    const triangleGeo = new CircleBufferGeometry(
+      (size * (camera as THREE.PerspectiveCamera).near) / 4,
+      0
+    );
 
-    // near
+    triangleGeo.rotateZ((7 * Math.PI) / 6);
+    triangleGeo.translate(
+      0,
+      ((camera as THREE.PerspectiveCamera).near * size * 2) / 3,
+      -((camera as THREE.PerspectiveCamera).near * size) / 2
+    );
 
-    if (colorNearFrustum) {
-      addLine("n1", "n2", colorNearFrustum);
-      addLine("n2", "n4", colorNearFrustum);
-      addLine("n4", "n3", colorNearFrustum);
-      addLine("n3", "n1", colorNearFrustum);
-    }
+    const cone = new Mesh(coneGeo, material);
+    const triangle = new Mesh(triangleGeo, material.clone());
 
-    // far
-
-    if (colorFarFrustum) {
-      addLine("f1", "f2", colorFarFrustum);
-      addLine("f2", "f4", colorFarFrustum);
-      addLine("f4", "f3", colorFarFrustum);
-      addLine("f3", "f1", colorFarFrustum);
-    }
-
-    // sides
-
-    if (colorSideFrustum) {
-      addLine("n1", "f1", colorSideFrustum);
-      addLine("n2", "f2", colorSideFrustum);
-      addLine("n3", "f3", colorSideFrustum);
-      addLine("n4", "f4", colorSideFrustum);
-    }
-
-    // cone
-
-    if (colorCone) {
-      addLine("p", "n1", colorCone);
-      addLine("p", "n2", colorCone);
-      addLine("p", "n3", colorCone);
-      addLine("p", "n4", colorCone);
-    }
-
-    // up
-
-    if (colorUp) {
-      addLine("u1", "u2", colorUp);
-      addLine("u2", "u3", colorUp);
-      addLine("u3", "u1", colorUp);
-    }
-
-    // target
-
-    if (colorTarget) {
-      addLine("c", "t", colorTarget);
-      addLine("p", "c", colorTarget);
-    }
-
-    // cross
-
-    if (colorCross) {
-      addLine("cn1", "cn2", colorCross);
-      addLine("cn3", "cn4", colorCross);
-
-      addLine("cf1", "cf2", colorCross);
-      addLine("cf3", "cf4", colorCross);
-    }
-
-    function addLine(
-      a: string,
-      b: string,
-      color: { r: number; g: number; b: number }
-    ) {
-      addPoint(a, color);
-      addPoint(b, color);
-    }
-
-    function addPoint(id: string, color: { r: number; g: number; b: number }) {
-      vertices.push(0, 0, 0);
-      colors.push(color.r, color.g, color.b);
-
-      if (pointMap[id] === undefined) {
-        pointMap[id] = [];
-      }
-
-      pointMap[id].push(vertices.length / 3 - 1);
-    }
-
-    geometry.setAttribute("position", new Float32BufferAttribute(vertices, 3));
-    geometry.setAttribute("color", new Float32BufferAttribute(colors, 3));
-
-    super(geometry, material);
-
-    this.colorOptions = {
-      colorNearFrustum,
-      colorFarFrustum,
-      colorSideFrustum,
-      colorCone,
-      colorUp,
-      colorTarget,
-      colorCross,
-    };
-
-    this.type = "CameraHelper";
+    super();
+    cone.name = "cone";
+    triangle.name = "triangle";
+    this.add(cone);
+    this.add(triangle);
 
     this.camera = camera;
-    if ((this.camera as THREE.PerspectiveCamera).updateProjectionMatrix)
-      (this.camera as THREE.PerspectiveCamera).updateProjectionMatrix();
+    this.camera.updateMatrixWorld();
 
-    this.matrix = camera.matrixWorld;
+    /**
+     * Convert numbers to Three Colors
+     */
+    if (typeof colors.cone === "number") colors.cone = new Color(colors.cone);
+
+    if (typeof colors.triangle === "number")
+      colors.triangle = new Color(colors.triangle);
+
+    if (typeof colors.frustum === "number")
+      colors.frustum = new Color(colors.frustum);
+
+    this.colors = colors as {
+      cone: THREE.Color | null;
+      triangle: THREE.Color | null;
+      frustum: THREE.Color | null;
+    };
+
+    (this as THREE.Object3D).type = "CameraHelper";
+    this.matrix = this.camera.matrixWorld;
     this.matrixAutoUpdate = false;
-
-    this.pointMap = pointMap;
 
     this.update();
   }
 
-  update() {
-    const geometry = this.geometry;
-    const pointMap = this.pointMap;
-
-    const w = 1,
-      h = 1;
-
-    // we need just camera projection matrix inverse
-    // world matrix must be identity
-
-    _camera.projectionMatrixInverse.copy(this.camera.projectionMatrixInverse);
-
-    // center / target
-
-    if (this.colorOptions.colorTarget) {
-      setPoint("c", pointMap, geometry, _camera, 0, 0, -1);
-      setPoint("t", pointMap, geometry, _camera, 0, 0, 1);
-    }
-
-    // near
-
-    if (this.colorOptions.colorNearFrustum) {
-      setPoint("n1", pointMap, geometry, _camera, -w, -h, -1);
-      setPoint("n2", pointMap, geometry, _camera, w, -h, -1);
-      setPoint("n3", pointMap, geometry, _camera, -w, h, -1);
-      setPoint("n4", pointMap, geometry, _camera, w, h, -1);
-    }
-
-    // far
-
-    if (this.colorOptions.colorFarFrustum) {
-      setPoint("f1", pointMap, geometry, _camera, -w, -h, 1);
-      setPoint("f2", pointMap, geometry, _camera, w, -h, 1);
-      setPoint("f3", pointMap, geometry, _camera, -w, h, 1);
-      setPoint("f4", pointMap, geometry, _camera, w, h, 1);
-    }
-
-    // up
-    if (this.colorOptions.colorUp) {
-      setPoint("u1", pointMap, geometry, _camera, w * 0.7, h * 1.1, -1);
-      setPoint("u2", pointMap, geometry, _camera, -w * 0.7, h * 1.1, -1);
-      setPoint("u3", pointMap, geometry, _camera, 0, h * 2, -1);
-    }
-
-    // cross
-    if (this.colorOptions.colorCross) {
-      setPoint("cf1", pointMap, geometry, _camera, -w, 0, 1);
-      setPoint("cf2", pointMap, geometry, _camera, w, 0, 1);
-      setPoint("cf3", pointMap, geometry, _camera, 0, -h, 1);
-      setPoint("cf4", pointMap, geometry, _camera, 0, h, 1);
-
-      setPoint("cn1", pointMap, geometry, _camera, -w, 0, -1);
-      setPoint("cn2", pointMap, geometry, _camera, w, 0, -1);
-      setPoint("cn3", pointMap, geometry, _camera, 0, -h, -1);
-      setPoint("cn4", pointMap, geometry, _camera, 0, h, -1);
-    }
-
-    geometry.getAttribute("position").needsUpdate = true;
-  }
-
   dispose() {
-    this.geometry.dispose();
-    (this.material as THREE.Material).dispose();
+    this.children.forEach((c) => {
+      (c as THREE.Mesh).geometry.dispose();
+      ((c as THREE.Mesh).material as THREE.Material).dispose();
+    });
   }
-}
 
-function setPoint(
-  point: string,
-  pointMap: { [x: string]: number[] },
-  geometry: BufferGeometry,
-  camera: Camera,
-  x: number,
-  y: number,
-  z: number
-) {
-  _vector.set(x, y, z).unproject(camera);
+  update() {
+    if (!this.camera) this.dispose();
 
-  const points = pointMap[point];
-
-  if (points !== undefined) {
-    const position = geometry.getAttribute("position");
-
-    for (let i = 0, l = points.length; i < l; i++) {
-      position.setXYZ(points[i], _vector.x, _vector.y, _vector.z);
-    }
+    this.children.forEach((c) => {
+      if (this.colors[c.name as keyof Colors])
+        ((c as THREE.Mesh).material as THREE.MeshBasicMaterial).color.set(
+          this.colors[c.name as keyof Colors]!
+        );
+    });
   }
 }
 

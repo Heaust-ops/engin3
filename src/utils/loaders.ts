@@ -415,10 +415,7 @@ export const loadCamera = ({
   switch (modelPath) {
     case Cameras.perspective:
       camera = new THREE.PerspectiveCamera(75, Cwidth() / Cheight(), 0.1, 1000);
-      const persprectiveHelper = new CameraHelper(camera, {
-        colorFarFrustum: null,
-        colorTarget: null,
-      });
+      const persprectiveHelper = new CameraHelper(camera);
       scene.add(persprectiveHelper);
       break;
     case Cameras.orthographic:
@@ -430,10 +427,7 @@ export const loadCamera = ({
         1,
         1000
       );
-      const orthographicHelper = new CameraHelper(camera, {
-        colorFarFrustum: null,
-        colorTarget: null,
-      });
+      const orthographicHelper = new CameraHelper(camera);
       scene.add(orthographicHelper);
       break;
   }

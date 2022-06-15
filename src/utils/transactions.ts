@@ -81,7 +81,7 @@ export const removeMesh = (mesh: THREE.Object3D) => {
     scene.remove(mesh!);
   }
   // Properly get Rid of Groups
-  else if (isType(mesh, "Group", "SkinnedMesh")) {
+  else if (isType(mesh, "Group", "SkinnedMesh", "CameraHelper")) {
     const children_to_remove = [] as THREE.Object3D[];
     mesh.traverse((child) => {
       children_to_remove.push(child);

@@ -2,6 +2,8 @@ import { ViewportModes, ViewportEventType, WorkingAxes } from "../enums";
 import {
   defaultViewportCamera,
   getViewportCamera,
+  outlinePass,
+  scene,
   setViewportCamera,
   viewportMode,
 } from "../three/viewport";
@@ -11,7 +13,7 @@ import {
   MeshyTypes,
   ViewportInteractionAllowed,
 } from "./constants";
-import { getLatestVE, reloadFromVE } from "./events";
+import { getLatestVE, reloadFromVE, viewportEventHistory } from "./events";
 import {
   isMultiselect,
   properSelected,
@@ -59,7 +61,12 @@ export const handleHotkeys = (
      * O: Presently used as a debugging key
      */
     case "o":
-      console.log(getViewportCamera().id, defaultViewportCamera.id);
+      console.log({
+        outline: outlinePass.selectedObjects,
+        selected: selectedItems,
+        veh: viewportEventHistory,
+        scene,
+      });
       break;
 
     /**
