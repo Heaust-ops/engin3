@@ -14,6 +14,7 @@ import { randomColor } from "./utils";
 import { defaultMaterial } from "./materials";
 import { scene } from "../three/viewport";
 import { viewportDivClassName } from "./constants";
+import { CameraHelper } from "./CameraHelper";
 
 /**
  * This Page Keeps the Model Loaders,
@@ -158,8 +159,8 @@ export const loadPrimitive = ({
         initials: {
           path: modelPath,
           method: buffer
-          ? MeshLoadMethod.loadPrimitiveBuffer
-          : MeshLoadMethod.loadPrimitive,
+            ? MeshLoadMethod.loadPrimitiveBuffer
+            : MeshLoadMethod.loadPrimitive,
         },
       };
       startTransaction(ViewportEventType.loadMesh, [pendingMeshTransaction]);
@@ -387,7 +388,7 @@ export const loadCamera = ({
   modelPath,
   pos = [0, 0, 0],
   rotation = [0, 0, 0],
-  size = 1,
+  size = 5,
   preprocess = (/* Mesh */) => {},
   buffer = false,
   asTransaction = true,
@@ -407,13 +408,17 @@ export const loadCamera = ({
     return document.getElementsByClassName(viewportDivClassName)[0].clientWidth;
   };
   const Cheight = () => {
-    return document.getElementsByClassName(viewportDivClassName)[0].clientHeight;
+    return document.getElementsByClassName(viewportDivClassName)[0]
+      .clientHeight;
   };
 
   switch (modelPath) {
     case Cameras.perspective:
       camera = new THREE.PerspectiveCamera(75, Cwidth() / Cheight(), 0.1, 1000);
-      const persprectiveHelper = new THREE.CameraHelper(camera);
+      const persprectiveHelper = new CameraHelper(camera, {
+        colorFarFrustum: null,
+        colorTarget: null,
+      });
       scene.add(persprectiveHelper);
       break;
     case Cameras.orthographic:
@@ -425,7 +430,10 @@ export const loadCamera = ({
         1,
         1000
       );
-      const orthographicHelper = new THREE.CameraHelper(camera);
+      const orthographicHelper = new CameraHelper(camera, {
+        colorFarFrustum: null,
+        colorTarget: null,
+      });
       scene.add(orthographicHelper);
       break;
   }
