@@ -18,6 +18,7 @@ import {
   isMultiselect,
   properSelected,
   selectedItems,
+  selectObject3D,
   turnMultiselect,
 } from "./selection";
 import {
@@ -293,7 +294,10 @@ export const handleHotkeys = (
       if (selected.length === 1 && CameraTypes.includes(selected[0].type)) {
         if (getViewportCamera().id === selected[0].id)
           setViewportCamera(defaultViewportCamera);
-        else setViewportCamera(selected[0] as THREE.PerspectiveCamera);
+        else {
+          setViewportCamera(selected[0] as THREE.PerspectiveCamera);
+          selectObject3D(null, true);
+        }
       }
 
       if (

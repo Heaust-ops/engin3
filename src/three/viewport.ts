@@ -175,62 +175,10 @@ export const viewportInit = (targetClass = viewportDivClassName) => {
     renderer.domElement.onmousedown = (ev) => {
       if (ev.button === 0 && viewportMode.value === ViewportModes.navigate) {
         // Only Select on Left Click and on Navigation mode
-        CheckRC(
-          viewportCamera,
-          (intersects: THREE.Intersection[]) => {
-            /**
-             * Only select items that we're allowed to interact with.
-             * Examples of items we aren't allowed to interact with are,
-             * Grid helper, Axes helper, helpers in general
-             */
-            let selectedMeshIndex = 0;
-            for (let i = 0; i < intersects.length; i++)
-              if (
-                ViewportInteractionAllowed.includes(intersects[i].object.type)
-              ) {
-                selectedMeshIndex = i;
-              }
-
-            /**
-             * Set the Largest Shell as Selected
-             * i.e. if a part of a group is selected,
-             * select the whole group instead
-             */
-            let selectedItem: THREE.Object3D | null =
-              intersects[selectedMeshIndex].object;
-
-            while (
-              typeof selectedItem?.parent?.name === "string" &&
-              selectedItem?.parent?.type !== "Scene"
-            )
-              selectedItem = (selectedItem as THREE.Mesh).parent;
-
-            /**
-             * Select the actual object if selected a helper
-             */
-            const helperTarget = getHelperTarget(selectedItem);
-            selectedItem = helperTarget ? helperTarget : selectedItem;
-
-            /**
-             * If an item is already selected
-             * clicking on them whould unselect them
-             */
-            let itemAlreadySelected = false;
-            doForSelectedItems((item) => {
-              if (item.id === selectedItem!.id) itemAlreadySelected = true;
-            });
-
-            if (selectedItem && itemAlreadySelected) {
-              unselectObject3D(selectedItem);
-            } else {
-              selectObject3D(selectedItem, !isMultiselect);
-            }
-          },
-          () => {
-            selectObject3D(null, true);
-            outlinePass.selectedObjects = [];
-          }
-        );
+        CheckRC(viewportCamera, onViewportClickRaycast, () => {
+          selectObject3D(null, true);
+          outlinePass.selectedObjects = [];
+        });
       }
     };
 
@@ -264,5 +212,57 @@ export const viewportInit = (targetClass = viewportDivClassName) => {
       },
       false
     );
+  }
+};
+
+const onViewportClickRaycast = (intersects: THREE.Intersection[]) => {
+  /**
+   * Only proceed for the main camera
+   */
+  if (renderPass.camera.id !== defaultViewportCamera.id) return;
+  /**
+   * Only select items that we're allowed to interact with.
+   * Examples of items we aren't allowed to interact with are,
+   * Grid helper, Axes helper, helpers in general
+   */
+  let selectedMeshIndex = 0;
+  for (let i = 0; i < intersects.length; i++)
+    if (ViewportInteractionAllowed.includes(intersects[i].object.type)) {
+      selectedMeshIndex = i;
+    }
+
+  /**
+   * Set the Largest Shell as Selected
+   * i.e. if a part of a group is selected,
+   * select the whole group instead
+   */
+  let selectedItem: THREE.Object3D | null =
+    intersects[selectedMeshIndex].object;
+
+  while (
+    typeof selectedItem?.parent?.name === "string" &&
+    selectedItem?.parent?.type !== "Scene"
+  )
+    selectedItem = (selectedItem as THREE.Mesh).parent;
+
+  /**
+   * Select the actual object if selected a helper
+   */
+  const helperTarget = getHelperTarget(selectedItem);
+  selectedItem = helperTarget ? helperTarget : selectedItem;
+
+  /**
+   * If an item is already selected
+   * clicking on them whould unselect them
+   */
+  let itemAlreadySelected = false;
+  doForSelectedItems((item) => {
+    if (item.id === selectedItem!.id) itemAlreadySelected = true;
+  });
+
+  if (selectedItem && itemAlreadySelected) {
+    unselectObject3D(selectedItem);
+  } else {
+    selectObject3D(selectedItem, !isMultiselect);
   }
 };
