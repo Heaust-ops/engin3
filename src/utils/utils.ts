@@ -1,8 +1,7 @@
 import { Group, Vector3 } from "three";
 import { WorkingAxes } from "../enums";
-import { MousePosition } from "../interfaces";
 import { scene, getViewportCamera } from "../three/viewport";
-import { mousePosition, ndcMousePosition } from "./mouse";
+import { MousePosition, ndcMousePosition } from "./mouse";
 import { isAnySelected, selectedItems } from "./selection";
 
 /**
@@ -21,42 +20,6 @@ export const doForSelectedItems = (
   action: (selectedItem: THREE.Object3D) => void
 ) => {
   if (isAnySelected()) selectedItems.forEach(action);
-};
-
-/**
- * Keeps the Mouse Position on heap fresh.
- * @param mouseMoveEvent Mouse Move Event
- */
-export const keepTrackOfCursor = (mouseMoveEvent: MouseEvent) => {
-  if (document.pointerLockElement) {
-    /**
-     * If the pointer is locked, update by using movement.
-     */
-    const radius = 20;
-    const { width, height } = document.getElementById(
-      "three-canvas"
-    ) as HTMLCanvasElement;
-    mousePosition.x += mouseMoveEvent.movementX;
-    mousePosition.y += mouseMoveEvent.movementY;
-    if (mousePosition.x > width + radius) {
-      mousePosition.x = -radius;
-    }
-    if (mousePosition.y > height + radius) {
-      mousePosition.y = -radius;
-    }
-    if (mousePosition.x < -radius) {
-      mousePosition.x = width + radius;
-    }
-    if (mousePosition.y < -radius) {
-      mousePosition.y = height + radius;
-    }
-  } else {
-    /**
-     * Update Normally
-     */
-    mousePosition.x = mouseMoveEvent.pageX;
-    mousePosition.y = mouseMoveEvent.pageY;
-  }
 };
 
 /**

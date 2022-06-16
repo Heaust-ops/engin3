@@ -17,7 +17,6 @@ import {
   doForSelectedItems,
   getMousePositionIn3D,
   getVector3Component,
-  keepTrackOfCursor,
   randomColor,
 } from "./utils/utils";
 import {
@@ -31,7 +30,7 @@ import { grab, rotate } from "./utils/transforms";
 import { numSelected, selectedItems } from "./utils/selection";
 import { coalesceVEHistory } from "./utils/memory";
 import SidePanel from "./components/SidePanel/SidePanel";
-import { ndcMousePosition } from "./utils/mouse";
+import { keepTrackOfCursor, ndcMousePosition } from "./utils/mouse";
 import { viewportEventHistory } from "./utils/events";
 
 /**
