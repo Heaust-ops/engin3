@@ -5,7 +5,7 @@
 
 import { getCharacterFrequency } from "./utils";
 
-interface SkyboxPaths {
+export interface SkyboxPaths {
   x: string;
   y: string;
   z: string;
@@ -212,5 +212,3 @@ const fallbackSkyboxPathParse = (
 
   return skyboxPaths;
 };
-
-export {};
