@@ -7,11 +7,16 @@ import styles from "./SidePanel.module.css";
 interface SidePanelProps {}
 
 const SidePanel: FunctionComponent<SidePanelProps> = () => {
+  const [isForcedActive, setisForcedActive] = useState(false);
   const [selectedPropertyTab, setselectedPropertyTab] = useState(
     ViewportSidePanelTabs.world
   );
   return (
-    <div className={`${styles.sidePanel}`}>
+    <div
+      className={`${styles.sidePanel} ${
+        isForcedActive && styles.sidePanelActive
+      }`}
+    >
       <div className={`${styles.objectList}`}></div>
       <div className={`${styles.properties}`}>
         <div className={`${styles.iconTab}`}>
@@ -42,6 +47,20 @@ const SidePanel: FunctionComponent<SidePanelProps> = () => {
             }
           </div>
         </div>
+      </div>
+
+      {/* Side Panel Active Holder */}
+      <div
+        onClick={() => {
+          setisForcedActive(!isForcedActive);
+        }}
+        className={`${styles.panelPin}`}
+      >
+        <div
+          className={`${styles.panelPinIndicator} ${
+            isForcedActive && styles.panelPinIndicatorActive
+          }`}
+        />
       </div>
     </div>
   );

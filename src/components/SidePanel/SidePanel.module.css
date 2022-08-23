@@ -13,6 +13,10 @@
   flex: 40rem;
 }
 
+.sidePanelActive {
+  flex: 40rem;
+}
+
 .objectList {
   height: calc(30% - 1px);
   border-bottom: 1px solid #444;
@@ -37,7 +41,8 @@
   pointer-events: none;
 }
 
-.sidePanel:hover .propertyTab {
+.sidePanel:hover .propertyTab,
+.sidePanelActive .propertyTab {
   width: 100%;
   opacity: 1;
   display: block;
@@ -75,7 +80,9 @@
 }
 
 .sidePanel:hover .propertyTab .propertyTabHeader,
-.sidePanel:hover .propertyTab .propertyTabContent {
+.sidePanel:hover .propertyTab .propertyTabContent,
+.sidePanelActive .propertyTab .propertyTabHeader,
+.sidePanelActive .propertyTab .propertyTabContent {
   opacity: 1;
   display: block;
   color: #ccc;
@@ -89,4 +96,28 @@
 
 .propertyTabContent {
   margin-top: 5rem;
+}
+
+.panelPin {
+  float: bottom;
+  width: 1rem;
+  height: 1rem;
+  display: flex;
+  cursor: pointer;
+  flex-direction: column;
+  justify-content: center;
+  transform: translate(0.8rem, -1.5rem);
+  border-radius: 50%;
+  border: 2px solid rgb(115, 115, 115);
+}
+
+.panelPinIndicator {
+  width: 1rem;
+  height: 0.3rem;
+  border-radius: 10%;
+  background-color: rgb(115, 115, 115);
+}
+
+.panelPinIndicatorActive {
+  transform: rotate(90deg);
 }
