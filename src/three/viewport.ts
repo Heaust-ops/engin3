@@ -203,9 +203,13 @@ export const viewportInit = (targetClass = viewportDivClassName) => {
     RAF();
 
     /**
-     * Debouncing as Resizing isn't smooth
-     * continous resizing just results in a blank screen
+     * Resizing isn't smooth
+     *
+     * continous resizing results in a blank screen
      * for the entire duration.
+     *
+     * Set timeout seems to work here the best at deferring,
+     * better than requestIdleCallback and debouncing
      */
     const onResize = () => {
       viewportCamera.aspect = Cwidth() / Cheight();
