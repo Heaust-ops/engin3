@@ -13,6 +13,21 @@ import { isAnySelected, selectedItems } from "./selection";
 /** */
 
 /**
+ * @param func the function to perform
+ * @param delay the duration of debounce
+ * @returns A function that can only be used every "delay" seconds
+ */
+export const debounce = (func: Function, delay: number) => {
+  let debounceTimer: NodeJS.Timer;
+  return function (this: void) {
+    const context = this;
+    const args = arguments;
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => func.apply(context, args), delay);
+  };
+};
+
+/**
  * Returns the character counts of a string
  * @param arg The string you wnat the char count of
  * @returns a Dict of char counts

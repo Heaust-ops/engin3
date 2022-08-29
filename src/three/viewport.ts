@@ -4,7 +4,7 @@ import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass.js";
 import { ViewportModes } from "../enums";
-import { doForSelectedItems, getHelperTarget } from "../utils/utils";
+import { debounce, doForSelectedItems, getHelperTarget } from "../utils/utils";
 import {
   isMultiselect,
   selectObject3D,
@@ -202,16 +202,21 @@ export const viewportInit = (targetClass = viewportDivClassName) => {
 
     RAF();
 
+    /**
+     * Debouncing as Resizing isn't smooth
+     * continous resizing just results in a blank screen
+     * for the entire duration.
+     */
+    const onResize = debounce(() => {
+      viewportCamera.aspect = Cwidth() / Cheight();
+      renderer.setSize(Cwidth(), Cheight());
+      viewportCamera.updateProjectionMatrix();
+    }, 20);
+
     // Responsiveness
-    window.addEventListener(
-      "resize",
-      () => {
-        viewportCamera.aspect = Cwidth() / Cheight();
-        renderer.setSize(Cwidth(), Cheight());
-        viewportCamera.updateProjectionMatrix();
-      },
-      false
-    );
+    const resizeObserver = new ResizeObserver(onResize);
+
+    resizeObserver.observe(target[0]);
   }
 };
 

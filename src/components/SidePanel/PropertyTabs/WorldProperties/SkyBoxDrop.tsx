@@ -24,6 +24,8 @@ const SkyBoxDrop: FunctionComponent<SkyBoxDropProps> = () => {
       }}
       onDrop={(e) => {
         const files = e.dataTransfer.files;
+        console.log(URL.createObjectURL(files[0]));
+
         if (!image6Check(files)) return;
 
         const fileArray = Array.from(files);
