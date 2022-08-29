@@ -207,11 +207,11 @@ export const viewportInit = (targetClass = viewportDivClassName) => {
      * continous resizing just results in a blank screen
      * for the entire duration.
      */
-    const onResize = debounce(() => {
+    const onResize = () => {
       viewportCamera.aspect = Cwidth() / Cheight();
-      renderer.setSize(Cwidth(), Cheight());
+      debounce(() => renderer.setSize(Cwidth(), Cheight()), 15)();
       viewportCamera.updateProjectionMatrix();
-    }, 20);
+    };
 
     // Responsiveness
     const resizeObserver = new ResizeObserver(onResize);
