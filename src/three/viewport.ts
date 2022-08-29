@@ -4,7 +4,7 @@ import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass.js";
 import { ViewportModes } from "../enums";
-import { debounce, doForSelectedItems, getHelperTarget } from "../utils/utils";
+import { doForSelectedItems, getHelperTarget } from "../utils/utils";
 import {
   isMultiselect,
   selectObject3D,
@@ -209,7 +209,7 @@ export const viewportInit = (targetClass = viewportDivClassName) => {
      */
     const onResize = () => {
       viewportCamera.aspect = Cwidth() / Cheight();
-      debounce(() => renderer.setSize(Cwidth(), Cheight()), 15)();
+      setTimeout(() => renderer.setSize(Cwidth(), Cheight()), 10);
       viewportCamera.updateProjectionMatrix();
     };
 
