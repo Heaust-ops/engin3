@@ -3,6 +3,14 @@
  * and HDRI lighting
  */
 
+import {
+  BackSide,
+  DoubleSide,
+  Mesh,
+  ShaderMaterial,
+  SphereGeometry,
+  TextureLoader,
+} from "three";
 import { getCharacterFrequency } from "./utils";
 
 export interface SkyboxPaths {
@@ -13,6 +21,48 @@ export interface SkyboxPaths {
   ny: string;
   nz: string;
 }
+
+export const makeSkyDome = (scene: THREE.Scene, imageURL: string) => {
+  const vertexShader = `
+  varying vec2 vUV;
+
+  void main() {  
+    vUV = uv;
+    vec4 pos = vec4(position, 1.0);
+    gl_Position = projectionMatrix * modelViewMatrix * pos;
+  }`;
+
+  const fragmentShader = `
+  uniform sampler2D tex;
+  
+  varying vec2 vUV;
+
+  void main() {  
+    vec4 smpl = texture2D(tex, vUV);
+    gl_FragColor = vec4(smpl.xyz, smpl.w);
+  }
+  `;
+
+  const geometry = new SphereGeometry(200, 60, 40);
+  const uniforms = {
+    tex: {
+      type: "t",
+      value: new TextureLoader().load(imageURL),
+    },
+  };
+
+  const material = new ShaderMaterial({
+    side: DoubleSide,
+    uniforms: uniforms,
+    vertexShader,
+    fragmentShader,
+  });
+
+  const skyBox = new Mesh(geometry, material);
+  skyBox.type = "skydome";
+  skyBox.scale.set(-1, 1, 1);
+  scene.add(skyBox);
+};
 
 /**
  * Automatically assign and get the side of the env cube,
@@ -128,12 +178,12 @@ export const getProperSkyboxPaths = (
 /**
  * Automatically assign and get the side of the env cube,
  * from the filename using identifiers to label them.
- * 
+ *
  * This a Fallback for if the skyboxes don't follow the
  * most common convention.
- * 
+ *
  * It looks for possible keywords.
- * 
+ *
  * @param paths A list of 6 image paths
  * @returns An Object with the env cube side mapped to the respective path
  */
@@ -178,7 +228,7 @@ const fallbackSkyboxPathParse = (
   /**
    * Common algorithm to find the maximum keyword holder
    * for each axis and then assigning it to that axis.
-   * 
+   *
    * So the path that has highest keyword matches for x,
    * gets assigned to x.
    */

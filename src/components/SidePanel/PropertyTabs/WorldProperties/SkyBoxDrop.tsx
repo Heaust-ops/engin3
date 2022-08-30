@@ -1,13 +1,18 @@
 import { FunctionComponent } from "react";
 import { CubeTextureLoader } from "three";
 import { scene } from "../../../../three/viewport";
-import { getProperSkyboxPaths, SkyboxPaths } from "../../../../utils/hdri";
+import {
+  getProperSkyboxPaths,
+  makeSkyDome,
+  SkyboxPaths,
+} from "../../../../utils/hdri";
+import { convertToJpeg } from "../../../../utils/images";
 
 interface SkyBoxDropProps {}
 
-const image6Check = (files: FileList) => {
+const imageNCheck = (files: FileList, n: number) => {
   return (
-    files.length === 6 &&
+    files.length === n &&
     Array.from(files).every((file) => (file as File).type.startsWith("image"))
   );
 };
@@ -24,9 +29,15 @@ const SkyBoxDrop: FunctionComponent<SkyBoxDropProps> = () => {
       }}
       onDrop={(e) => {
         const files = e.dataTransfer.files;
-        console.log(URL.createObjectURL(files[0]));
 
-        if (!image6Check(files)) return;
+        if (imageNCheck(files, 1)) {
+          convertToJpeg(files[0]).then((image) => {
+            makeSkyDome(scene, URL.createObjectURL(image));
+            console.log(URL.createObjectURL(image));
+          });
+        }
+
+        if (!imageNCheck(files, 6)) return;
 
         const fileArray = Array.from(files);
         const nameArray = fileArray.map((f) => f.name);
@@ -52,6 +63,7 @@ const SkyBoxDrop: FunctionComponent<SkyBoxDropProps> = () => {
     >
       <p
         style={{
+          pointerEvents: "none",
           transform: "translateY(-0.3rem)",
           fontFamily: "monospace",
           margin: "auto auto",
