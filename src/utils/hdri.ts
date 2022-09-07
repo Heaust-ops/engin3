@@ -4,7 +4,7 @@
  */
 
 import {
-  BackSide,
+  // BackSide,
   DoubleSide,
   Mesh,
   ShaderMaterial,
